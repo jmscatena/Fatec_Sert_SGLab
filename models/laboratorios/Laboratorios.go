@@ -9,19 +9,20 @@ import (
 )
 
 type Laboratorios struct {
-	ID                  uint64      `gorm:"primary_key;auto_increment" json:"id"`
-	Titulo              string      `gorm:"not null" json:"titulo"`
-	Descricao           string      `json:"descricao"`
-	Quantidade          int16       `gorm:"not null; default=20" json:"quantidade"`
-	ComputadorProfessor bool        `gorm:"default=true" json:"pc_professor"`
-	Rotativo            bool        `gorm:"default=true" json:"rotativo"`
-	Materiais           []Materiais `gorm:"many2many=laboratorio_materiais" json:"materiais"`
+	ID                  uint64                 `gorm:"primary_key;auto_increment" json:"id"`
+	Titulo              string                 `gorm:"not null" json:"titulo"`
+	Descricao           string                 `json:"descricao"`
+	Quantidade          int16                  `gorm:"not null; default=20" json:"quantidade"`
+	ComputadorProfessor bool                   `gorm:"default=true" json:"pc_professor"`
+	Rotativo            bool                   `gorm:"default=true" json:"rotativo"`
+	CreateUserID        int                    `json:"-"`
+	CreatedBy           administrativo.Usuario `gorm:"foreignKey:CreateUserID;references:ID" json:"created_by"`
+	CreatedAt           time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
+	UpdateUserID        int                    `json:"-"`
+	UpdatedBy           administrativo.Usuario `gorm:"foreignKey:UpdateUserID;references:ID" json:"updated_by"`
+	UpdatedAt           time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
+	//Materiais           []Materiais `gorm:"many2many=laboratorio_materiais" json:"materiais"`
 
-	CreatedBy administrativo.Usuario `gorm:"default:CURRENT_TIMESTAMP" json:"created_by"`
-	CreatedAt time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
-
-	UpdatedBy administrativo.Usuario `gorm:"default:CURRENT_TIMESTAMP" json:"updated_by"`
-	UpdatedAt time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
 }
 
 func (p *Laboratorios) Validate() error {
@@ -51,9 +52,9 @@ func (p *Laboratorios) Update(db *gorm.DB, uid uint64) (*Laboratorios, error) {
 			"Quantidade":          p.Quantidade,
 			"ComputadorProfessor": p.ComputadorProfessor,
 			"Rotativo":            p.Rotativo,
-			"Materiais":           p.Materiais,
-			"UpdatedBy":           p.UpdatedBy,
-			"UpdatedAt":           time.Now()}).Error
+			//"Materiais":           p.Materiais,
+			"UpdatedBy": p.UpdatedBy,
+			"UpdatedAt": time.Now()}).Error
 	if err != nil {
 		return nil, err
 	}

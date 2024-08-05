@@ -1,6 +1,7 @@
 package database
 
 import (
+	"github.com/jmscatena/Fatec_Sert_SGLab/database/migrations"
 	"log"
 	"os"
 
@@ -33,5 +34,6 @@ func Init() (*gorm.DB, error) {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	migrations.RunMigrate(db)
 	return db, err
 }
