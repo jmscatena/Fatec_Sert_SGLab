@@ -9,6 +9,7 @@ import (
 )
 
 type GestaoMateriais struct {
+	gorm.Model
 	ID         uint64                 `gorm:"primary_key;auto_increment" json:"id"`
 	Reserva    Reservas               `gorm:"foreignKey:ID" json:"reserva"`
 	Disponivel bool                   `gorm:"default:false" json:"disponivel"`

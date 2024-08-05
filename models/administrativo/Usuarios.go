@@ -11,6 +11,7 @@ import (
 )
 
 type Usuario struct {
+	gorm.Model
 	ID        uint64    `gorm:"primary_key;auto_increment" json:"id"`
 	Nome      string    `gorm:"size:255;not null;unique" json:"nome"`
 	Email     string    `gorm:"size:100;not null;unique" json:"email"`

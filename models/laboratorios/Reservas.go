@@ -9,6 +9,7 @@ import (
 )
 
 type Reservas struct {
+	gorm.Model
 	ID           uint64                 `gorm:"primary_key;auto_increment" json:"id"`
 	Laboratorio  Laboratorios           `gorm:"foreignKey: ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"laboratorio"`
 	DataInicial  time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"data_inicio"`

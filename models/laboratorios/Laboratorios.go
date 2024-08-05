@@ -9,6 +9,7 @@ import (
 )
 
 type Laboratorios struct {
+	gorm.Model
 	ID                  uint64                 `gorm:"primary_key;auto_increment" json:"id"`
 	Titulo              string                 `gorm:"not null" json:"titulo"`
 	Descricao           string                 `json:"descricao"`

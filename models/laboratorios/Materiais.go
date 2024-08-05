@@ -8,6 +8,7 @@ import (
 )
 
 type Materiais struct {
+	gorm.Model
 	ID         uint64  `gorm:"primary_key;auto_increment" json:"id"`
 	Titulo     string  `gorm:"not null" json:"titulo"`
 	Quantidade float64 `gorm:"not null; default=0.0" json:"quantidade"`
