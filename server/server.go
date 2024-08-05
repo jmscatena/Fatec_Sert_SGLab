@@ -12,9 +12,9 @@ type Server struct {
 	server *gin.Engine
 }
 
-func NewServer() Server {
+func NewServer(port string) Server {
 	return Server{
-		port:   "5000",
+		port:   port,
 		server: gin.Default(),
 	}
 }
