@@ -22,7 +22,7 @@ type Laboratorios struct {
 	UpdateUserID        int                    `json:"-"`
 	UpdatedBy           administrativo.Usuario `gorm:"foreignKey:UpdateUserID;references:ID" json:"updated_by"`
 	UpdatedAt           time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
-	Materiais           []Materiais            `gorm:"many2many=laboratorio_materiais" json:"materiais"`
+	Materiais           []*Materiais           `gorm:"many2many:laboratorio_materiais" json:"materiais"`
 }
 
 func (p *Laboratorios) Validate() error {
@@ -52,9 +52,9 @@ func (p *Laboratorios) Update(db *gorm.DB, uid uint64) (*Laboratorios, error) {
 			"Quantidade":          p.Quantidade,
 			"ComputadorProfessor": p.ComputadorProfessor,
 			"Rotativo":            p.Rotativo,
-			//"Materiais":           p.Materiais,
-			"UpdatedBy": p.UpdatedBy,
-			"UpdatedAt": time.Now()}).Error
+			"Materiais":           p.Materiais,
+			"UpdatedBy":           p.UpdatedBy,
+			"UpdatedAt":           time.Now()}).Error
 	if err != nil {
 		return nil, err
 	}

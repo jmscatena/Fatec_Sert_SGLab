@@ -10,21 +10,24 @@ import (
 
 type Reservas struct {
 	gorm.Model
-	ID           uint64                 `gorm:"primary_key;auto_increment" json:"id"`
-	Laboratorio  Laboratorios           `gorm:"foreignKey: ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"laboratorio"`
-	DataInicial  time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"data_inicio"`
-	DataFinal    time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"data_fim"`
-	HoraInicial  time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"hora_inicio"`
-	HoraFinal    time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"hora_fim"`
-	DiaSemana    string                 `gorm:"not null; default=0.0" json:"dia_semana"`
-	Rotativo     bool                   `gorm:"default:false" json:"rotativo"`
-	Autorizado   bool                   `gorm:"not null" json:"autorizado"`
-	AutorizadoBy administrativo.Usuario `gorm:"foreignKey: ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"autorizado_por"`
-	AutorizadoAt time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"autorizado_em"`
-	SolicitadoBy administrativo.Usuario `gorm:"foreignKey: ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"solicitado_por"`
-	SolicitadoAt time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"solicitado_em"`
-	Ativa        bool                   `gorm:"default:false" json:"ativa"`
-	CreatedAt    time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
+	ID            uint64 `gorm:"primary_key;auto_increment" json:"id"`
+	LaboratorioID uint64
+	Laboratorio   Laboratorios           `gorm:"foreignKey: LaboratorioID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"laboratorio"`
+	DataInicial   time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"data_inicio"`
+	DataFinal     time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"data_fim"`
+	HoraInicial   time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"hora_inicio"`
+	HoraFinal     time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"hora_fim"`
+	DiaSemana     string                 `gorm:"not null; default=0.0" json:"dia_semana"`
+	Rotativo      bool                   `gorm:"default:false" json:"rotativo"`
+	Autorizado    bool                   `gorm:"not null" json:"autorizado"`
+	AutorizadoID  uint64                 `json:"-"`
+	AutorizadoBy  administrativo.Usuario `gorm:"foreignKey: AutorizadoID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"autorizado_por"`
+	AutorizadoAt  time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"autorizado_em"`
+	SolicitadoID  uint64
+	SolicitadoBy  administrativo.Usuario `gorm:"foreignKey: SolicitadoID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"solicitado_por"`
+	SolicitadoAt  time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"solicitado_em"`
+	Ativa         bool                   `gorm:"default:false" json:"ativa"`
+	CreatedAt     time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
 }
 
 func (p *Reservas) Validate() error {

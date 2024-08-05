@@ -9,12 +9,15 @@ import (
 )
 
 type GestaoMateriais struct {
+	// Esta faltando os materiais
 	gorm.Model
 	ID         uint64                 `gorm:"primary_key;auto_increment" json:"id"`
-	Reserva    Reservas               `gorm:"foreignKey:ID" json:"reserva"`
+	ReservaID  uint64                 `json:"-"`
+	Reserva    Reservas               `gorm:"references:ID" json:"reserva"`
 	Disponivel bool                   `gorm:"default:false" json:"disponivel"`
 	CompraEm   time.Time              `json:"compra_em"`
-	CreatedBy  administrativo.Usuario `gorm:"foreignKey:ID" json:"created_by"`
+	UsuarioID  uint64                 `json:"-"`
+	CreatedBy  administrativo.Usuario `gorm:"foreignKey:UsuarioID" json:"created_by"`
 	CreatedAt  time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
 }
 
