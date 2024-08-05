@@ -7,7 +7,7 @@ import (
 )
 
 type Tables interface {
-	administrativo.Usuario | administrativo.GestaoMateriais |
+	administrativo.Usuario | laboratorios.GestaoMateriais |
 		laboratorios.Laboratorios | laboratorios.Reservas | laboratorios.Materiais
 }
 

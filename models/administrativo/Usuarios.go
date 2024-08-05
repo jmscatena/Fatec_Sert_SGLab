@@ -2,13 +2,12 @@ package administrativo
 
 import (
 	"errors"
-	"html"
-	"strings"
-	"time"
-
 	"github.com/badoux/checkmail"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"html"
+	"strings"
+	"time"
 )
 
 type Usuario struct {

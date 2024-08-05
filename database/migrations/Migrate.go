@@ -8,7 +8,7 @@ import (
 
 func RunMigrate(db *gorm.DB) {
 
-	db.AutoMigrate(&administrativo.GestaoMateriais{})
+	db.AutoMigrate(&laboratorios.GestaoMateriais{})
 	db.AutoMigrate(&administrativo.Usuario{})
 	db.AutoMigrate(&laboratorios.Laboratorios{})
 	db.AutoMigrate(&laboratorios.Reservas{})

@@ -1,7 +1,8 @@
-package administrativo
+package laboratorios
 
 import (
 	"errors"
+	"github.com/jmscatena/Fatec_Sert_SGLab/models/administrativo"
 	"gorm.io/gorm"
 	"strings"
 	"time"
@@ -9,7 +10,7 @@ import (
 
 type GestaoMateriais struct {
 	ID         uint64                 `gorm:"primary_key;auto_increment" json:"id"`
-	Reserva    laboratorios.Reserva   `gorm:"foreignKey:ID" json:"reserva"`
+	Reserva    Reservas               `gorm:"foreignKey:ID" json:"reserva"`
 	Disponivel bool                   `gorm:"default:false" json:"disponivel"`
 	CompraEm   time.Time              `json:"compra_em"`
 	CreatedBy  administrativo.Usuario `gorm:"foreignKey:ID" json:"created_by"`
@@ -17,10 +18,6 @@ type GestaoMateriais struct {
 }
 
 func (p *GestaoMateriais) Validate() error {
-
-	if p.Titulo == "" || p.Titulo == "null" {
-		return errors.New("obrigatório: titulo")
-	}
 	return nil
 }
 
@@ -38,14 +35,10 @@ func (p *GestaoMateriais) Create(db *gorm.DB) (int64, error) {
 func (p *GestaoMateriais) Update(db *gorm.DB, uid uint64) (*GestaoMateriais, error) {
 	err := db.Debug().Model(&GestaoMateriais{}).Where("id = ?", uid).Take(&GestaoMateriais{}).UpdateColumns(
 		map[string]interface{}{
-			"Titulo":              p.Titulo,
-			"Descricao":           p.Descricao,
-			"Quantidade":          p.Quantidade,
-			"ComputadorProfessor": p.ComputadorProfessor,
-			"Rotativo":            p.Rotativo,
-			"Materiais":           p.Materiais,
-			"UpdatedBy":           p.UpdatedBy,
-			"UpdatedAt":           time.Now()}).Error
+			"reserva":    p.Reserva,
+			"disponivel": p.Disponivel,
+			"compra_em":  p.CompraEm,
+			"criado_por": p.CreatedBy}).Error
 	if err != nil {
 		return nil, err
 	}
