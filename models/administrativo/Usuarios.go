@@ -6,6 +6,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"html"
+	"log"
 	"strings"
 	"time"
 )
@@ -14,8 +15,8 @@ type Usuario struct {
 	gorm.Model
 	ID        uint64    `gorm:"primary_key;auto_increment" json:"id"`
 	Nome      string    `gorm:"size:255;not null;unique" json:"nome"`
-	Email     string    `gorm:"size:100;not null;unique" json:"email"`
-	Senha     string    `gorm:"size:100;not null;"`
+	Email     string    `gorm:"size:100;not null,email;" json:"email"`
+	Senha     string    `gorm:"size:100;not null;" json:"-"`
 	Ativo     bool      `gorm:"default:True;not null;" json:"ativo"`
 	Admin     bool      `gorm:"default:False;not null;"`
 	Professor bool      `gorm:"default:False;not null;"`
@@ -172,4 +173,9 @@ func (u *Usuario) Prepare() {
 	u.Senha = string(Hash(u.Senha))
 	u.CreatedAt = time.Now()
 	u.UpdatedAt = time.Now()
+
+	err := u.Validate("padrao")
+	if err != nil {
+		log.Fatalf("Error during validation:%v", err)
+	}
 }

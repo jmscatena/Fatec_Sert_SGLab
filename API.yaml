@@ -2,7 +2,15 @@ openapi: 3.0.3
 info:
   title: SGLab
   description: Sistema de Gerenciamento de Agendamento de Laboratório
-  version: 0.0.1
+  version: 0.0.1.1
 servers:
-  - url: 'https'
+  - url: 'http://localhost:8000'
 paths:
+  /user:
+    get:
+      description: Get a List of All Users
+      responses:
+        200:
+          description: A list of Users
+
+
