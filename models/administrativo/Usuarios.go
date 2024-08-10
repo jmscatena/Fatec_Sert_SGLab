@@ -2,7 +2,6 @@ package administrativo
 
 import (
 	"errors"
-	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"html"
@@ -13,16 +12,16 @@ import (
 
 type Usuario struct {
 	gorm.Model
-	ID        uint64    `gorm:"primary_key;auto_increment" json:"ID"`
-	Nome      string    `gorm:"size:255;not null;unique" json:"nome"`
-	Email     string    `gorm:"size:100;not null,email;" json:"email"`
-	Senha     string    `gorm:"size:100;not null;"`
-	Ativo     bool      `gorm:"default:True;" json:"ativo"`
-	Admin     bool      `gorm:"default:False;"`
-	Professor bool      `gorm:"default:False;"`
-	Tecnico   bool      `gorm:"default:False;"`
-	CreatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"criado_em"`
-	UpdatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"atualizado_em"`
+	ID        uint64 `gorm:"primary_key;auto_increment" json:"ID"`
+	Nome      string `gorm:"size:255;not null;unique" json:"nome"`
+	Email     string `gorm:"size:100;not null,email;" json:"email"`
+	Senha     string `gorm:"size:100;not null;" json:"-"`
+	Ativo     bool   `gorm:"default:True;" json:"ativo"`
+	Admin     bool   `gorm:"default:False;"`
+	Professor bool   `gorm:"default:False;"`
+	Tecnico   bool   `gorm:"default:False;"`
+	//CreatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"criado_em"`
+	//UpdatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"atualizado_em"`
 }
 
 func (u *Usuario) Create(db *gorm.DB) (int64, error) {
@@ -43,15 +42,19 @@ func (u *Usuario) Update(db *gorm.DB, uid uint64) (*Usuario, error) {
 		return nil, verr
 	}
 	u.Prepare()
+	db = db.Model(Usuario{}).Where("id = ?", uid).Updates(Usuario{
+		Senha: u.Senha,
+		Nome:  u.Nome,
+		Email: u.Email})
 
-	db = db.Debug().Model(&Usuario{}).Where("id = ?", uid).Take(&Usuario{}).UpdateColumns(
+	/*db = db.Debug().Model(&Usuario{}).Where("id = ?", uid).Take(&Usuario{}).UpdateColumns(
 		map[string]interface{}{
-			"Senha":      u.Senha,
-			"Nome":       u.Nome,
-			"Email":      u.Email,
-			"updated_at": time.Now(),
+			"Senha": u.Senha,
+			"Nome":  u.Nome,
+			"Email": u.Email,
+			//"updated_at": time.Now(),
 		},
-	)
+	)*/
 	if db.Error != nil {
 		return &Usuario{}, db.Error
 	}
@@ -68,7 +71,6 @@ func (u *Usuario) List(db *gorm.DB) (*[]Usuario, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("Usuarios:", Usuarios)
 	return &Usuarios, err
 }
 
@@ -98,9 +100,7 @@ func (u *Usuario) FindBy(db *gorm.DB, param string, uid ...interface{}) (*[]Usua
 }
 
 func (u *Usuario) Delete(db *gorm.DB, uid uint64) (int64, error) {
-
-	db = db.Debug().Model(&Usuario{}).Where("id = ?", uid).Take(&Usuario{}).Delete(&Usuario{})
-
+	db = db.Debug().Where("id = ?", uid).Delete(&Usuario{})
 	if db.Error != nil {
 		return 0, db.Error
 	}
