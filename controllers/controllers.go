@@ -16,7 +16,6 @@ func Index(c *gin.Context) {
 }
 
 func Add[T interfaces.Tables](c *gin.Context, o interfaces.PersistenceHandler[T]) {
-
 	if reflect.TypeOf(o) != nil {
 		if err := c.ShouldBindJSON(&o); err != nil {
 			fmt.Println("ERRO:", err)
@@ -30,7 +29,7 @@ func Add[T interfaces.Tables](c *gin.Context, o interfaces.PersistenceHandler[T]
 		code, cerr := services.New(handler)
 
 		if cerr != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusText(http.StatusBadRequest), "data": cerr})
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusText(http.StatusConflict), "data": cerr})
 		}
 		c.JSON(http.StatusCreated, gin.H{"status": http.StatusText(http.StatusCreated), "data": code})
 	}
@@ -53,7 +52,7 @@ func Modify[T interfaces.Tables](c *gin.Context, o interfaces.PersistenceHandler
 		if cerr != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusText(http.StatusBadRequest), "data": cerr})
 		}
-		c.JSON(http.StatusCreated, gin.H{"status": http.StatusText(http.StatusCreated), "data": code})
+		c.JSON(http.StatusCreated, gin.H{"status": http.StatusText(http.StatusAccepted), "data": code})
 	}
 }
 
@@ -65,7 +64,7 @@ func Erase[T interfaces.Tables](c *gin.Context, o interfaces.PersistenceHandler[
 		if cerr != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusText(http.StatusBadRequest), "data": cerr})
 		}
-		c.JSON(http.StatusCreated, gin.H{"status": http.StatusText(http.StatusCreated), "data": code})
+		c.JSON(http.StatusCreated, gin.H{"status": http.StatusText(http.StatusNoContent), "data": code})
 	}
 }
 
