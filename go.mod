@@ -4,7 +4,6 @@ go 1.22
 
 require (
 	github.com/gin-gonic/gin v1.10.0
-	github.com/go-playground/assert/v2 v2.2.0
 	gorm.io/driver/postgres v1.5.9
 )
 
@@ -40,7 +39,6 @@ require (
 )
 
 require (
-	github.com/badoux/checkmail v1.2.4
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/pgx/v5 v5.6.0 // indirect
