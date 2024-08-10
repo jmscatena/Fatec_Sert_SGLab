@@ -2,7 +2,7 @@ package administrativo
 
 import (
 	"errors"
-	"github.com/badoux/checkmail"
+	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"html"
@@ -13,14 +13,14 @@ import (
 
 type Usuario struct {
 	gorm.Model
-	ID        uint64    `gorm:"primary_key;auto_increment" json:"id"`
+	ID        uint64    `gorm:"primary_key;auto_increment" json:"ID"`
 	Nome      string    `gorm:"size:255;not null;unique" json:"nome"`
 	Email     string    `gorm:"size:100;not null,email;" json:"email"`
-	Senha     string    `gorm:"size:100;not null;" json:"-"`
-	Ativo     bool      `gorm:"default:True;not null;" json:"ativo"`
-	Admin     bool      `gorm:"default:False;not null;"`
-	Professor bool      `gorm:"default:False;not null;"`
-	Tecnico   bool      `gorm:"default:False;not null;"`
+	Senha     string    `gorm:"size:100;not null;"`
+	Ativo     bool      `gorm:"default:True;" json:"ativo"`
+	Admin     bool      `gorm:"default:False;"`
+	Professor bool      `gorm:"default:False;"`
+	Tecnico   bool      `gorm:"default:False;"`
 	CreatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"criado_em"`
 	UpdatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"atualizado_em"`
 }
@@ -68,6 +68,7 @@ func (u *Usuario) List(db *gorm.DB) (*[]Usuario, error) {
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("Usuarios:", Usuarios)
 	return &Usuarios, err
 }
 
@@ -115,47 +116,48 @@ func (u *Usuario) DeleteBy(db *gorm.DB, cond string, uid interface{}) (int64, er
 }
 
 func (u *Usuario) Validate(action string) error {
-	switch strings.ToLower(action) {
-	case "update":
-		if u.Nome == "" {
-			return errors.New("obrigatório: nome")
-		}
-		if u.Senha == "" {
-			return errors.New("obrigatório: senha")
-		}
-		if u.Email == "" {
-			return errors.New("obrigatório: email")
-		}
-		if err := checkmail.ValidateFormat(u.Email); err != nil {
-			return errors.New("inválido: email")
-		}
-		return nil
-	case "login":
-		if u.Senha == "" {
-			return errors.New("obrigatório: senha")
-		}
-		if u.Email == "" {
-			return errors.New("obrigatório: email")
-		}
-		if err := checkmail.ValidateFormat(u.Email); err != nil {
-			return errors.New("inválido: email")
-		}
-		return nil
-	default:
-		if u.Nome == "" {
-			return errors.New("obrigatório: nome")
-		}
-		if u.Senha == "" {
-			return errors.New("obrigatório: senha")
-		}
-		if u.Email == "" {
-			return errors.New("obrigatório: email")
-		}
-		if err := checkmail.ValidateFormat(u.Email); err != nil {
-			return errors.New("inválido: email")
-		}
-		return nil
-	}
+	return nil
+	/*	switch strings.ToLower(action) {
+		case "update":
+			if u.Nome == "" {
+				return errors.New("obrigatório: nome")
+			}
+			if u.Senha == "" {
+				return errors.New("obrigatório: senha")
+			}
+			if u.Email == "" {
+				return errors.New("obrigatório: email")
+			}
+			if err := checkmail.ValidateFormat(u.Email); err != nil {
+				return errors.New("inválido: email")
+			}
+			return nil
+		case "login":
+			if u.Senha == "" {
+				return errors.New("obrigatório: senha")
+			}
+			if u.Email == "" {
+				return errors.New("obrigatório: email")
+			}
+			if err := checkmail.ValidateFormat(u.Email); err != nil {
+				return errors.New("inválido: email")
+			}
+			return nil
+		default:
+			if u.Nome == "" {
+				return errors.New("obrigatório: nome")
+			}
+			if u.Senha == "" {
+				return errors.New("obrigatório: senha")
+			}
+			if u.Email == "" {
+				return errors.New("obrigatório: email")
+			}
+			if err := checkmail.ValidateFormat(u.Email); err != nil {
+				return errors.New("inválido: email")
+			}
+			return nil
+		}*/
 }
 
 func Hash(Senha string) []byte {

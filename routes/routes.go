@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -15,9 +14,7 @@ func ConfigRoutes(router *gin.Engine) *gin.Engine {
 		user := main.Group("user")
 		{
 			var obj administrativo.Usuario
-
 			user.POST("/", func(context *gin.Context) {
-				fmt.Println("contexto:", context)
 				controllers.Add[administrativo.Usuario](context, &obj)
 			})
 			user.GET("/", func(context *gin.Context) {
