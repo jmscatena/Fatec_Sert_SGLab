@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/jmscatena/Fatec_Sert_SGLab/database"
@@ -14,8 +15,9 @@ func New[T interfaces.Tables](o interfaces.PersistenceHandler[T]) (int64, error)
 		return -1, err
 	}
 	recid, err := o.Create(db)
+	fmt.Println("services:", err)
 	if err != nil {
-		log.Fatalln(err)
+		//log.Fatalln(err)
 		return 0, err
 	}
 	if recid != 0 {
@@ -32,7 +34,7 @@ func Update[T interfaces.Tables](o interfaces.PersistenceHandler[T], uid uint64)
 	}
 	rec, err := o.Update(db, uid)
 	if err != nil {
-		log.Fatalln(err)
+		//log.Fatalln(err)
 		return nil, err
 	}
 	return rec, nil
@@ -46,7 +48,7 @@ func Del[T interfaces.Tables](o interfaces.PersistenceHandler[T], uid uint64) (i
 	}
 	rec, err := o.Delete(db, uid)
 	if err != nil {
-		log.Fatalln(err)
+		//log.Fatalln(err)
 		return 0, err
 	}
 	return rec, nil
@@ -60,7 +62,7 @@ func Get[T interfaces.Tables](o interfaces.PersistenceHandler[T], uid uint64) (*
 	}
 	rec, err := o.Find(db, uid)
 	if err != nil {
-		log.Fatalln(err)
+		//log.Fatalln(err)
 		return nil, err
 	}
 	return rec, nil
@@ -75,7 +77,7 @@ func GetAll[T interfaces.Tables](o interfaces.PersistenceHandler[T]) (*[]T, erro
 	var rec *[]T
 	rec, err = o.List(db)
 	if err != nil {
-		log.Fatalln(err)
+		//log.Fatalln(err)
 		return nil, err
 	}
 	return rec, nil
@@ -89,7 +91,7 @@ func GetBy[T interfaces.Tables](o interfaces.PersistenceHandler[T], param string
 	}
 	rec, err := o.FindBy(db, param, uid)
 	if err != nil {
-		log.Fatalln(err)
+		//log.Fatalln(err)
 		return nil, err
 	}
 	return rec, nil
