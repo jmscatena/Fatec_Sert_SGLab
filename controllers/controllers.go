@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"reflect"
 
@@ -15,9 +16,15 @@ func Index(c *gin.Context) {
 }
 
 func Add[T interfaces.Tables](c *gin.Context, o interfaces.PersistenceHandler[T]) {
+
 	if reflect.TypeOf(o) != nil {
 		if err := c.ShouldBindJSON(&o); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusText(http.StatusBadRequest), "data": err})
+			fmt.Println("ERRO:", err)
+			//msg para deploy
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusText(http.StatusBadRequest), "data": "Erro de JSON"})
+			//msg para dev
+			//c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusText(http.StatusBadRequest), "data": err})
+			return
 		}
 		var handler interfaces.PersistenceHandler[T] = o
 		code, cerr := services.New(handler)
@@ -32,7 +39,13 @@ func Add[T interfaces.Tables](c *gin.Context, o interfaces.PersistenceHandler[T]
 func Modify[T interfaces.Tables](c *gin.Context, o interfaces.PersistenceHandler[T], uid uint64) {
 	if reflect.TypeOf(o) != nil {
 		if err := c.ShouldBindJSON(&o); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusText(http.StatusBadRequest), "data": err})
+			fmt.Println("ERRO:", err)
+			//msg para deploy
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusText(http.StatusBadRequest), "data": "Erro de JSON"})
+			//msg para dev
+			//c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusText(http.StatusBadRequest), "data": err})
+			return
+
 		}
 		var handler interfaces.PersistenceHandler[T] = o
 		code, cerr := services.Update(handler, uid)
