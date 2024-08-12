@@ -71,13 +71,15 @@ func Erase[T interfaces.Tables](c *gin.Context, o interfaces.PersistenceHandler[
 func Get[T interfaces.Tables](c *gin.Context, o interfaces.PersistenceHandler[T], uid uint64) {
 	if reflect.TypeOf(o) != nil {
 		if uid == 0 {
-			c.JSON(http.StatusNotFound, gin.H{"status": http.StatusText(http.StatusNotFound), "data": "No Data"})
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusText(http.StatusBadRequest), "data": "{}"})
+			return
 		}
 		var handler interfaces.PersistenceHandler[T] = o
 		rec, cerr := services.Get(handler, uid)
 
 		if cerr != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusText(http.StatusBadRequest), "data": cerr})
+			return
 		}
 		c.JSON(http.StatusOK, gin.H{"data": rec, "status": http.StatusText(http.StatusOK)})
 	}

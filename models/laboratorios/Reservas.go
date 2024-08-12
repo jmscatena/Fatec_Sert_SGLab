@@ -62,32 +62,31 @@ func (p *Reservas) Create(db *gorm.DB) (int64, error) {
 }
 
 func (p *Reservas) Update(db *gorm.DB, uid uint64) (*Reservas, error) {
-	err := db.Debug().Model(&Reservas{}).Where("id = ?", uid).Take(&Reservas{}).UpdateColumns(
-		map[string]interface{}{
-			"Laboratorio":  p.Laboratorio,
-			"DataInicial":  p.DataInicial,
-			"DataFinal":    p.DataFinal,
-			"HoraInicial":  p.HoraInicial,
-			"HoraFinal":    p.HoraFinal,
-			"DiaSemana":    p.DiaSemana,
-			"Rotativo":     p.Rotativo,
-			"Autorizado":   p.Autorizado,
-			"AutorizadoBy": p.AutorizadoBy,
-			"SolicitadoBy": p.SolicitadoBy,
-			"Ativa":        p.Ativa,
-			"UpdatedAt":    time.Now()}).Error
-	if err != nil {
-		return nil, err
+	db = db.Debug().Model(Reservas{}).Where("id = ?", uid).Updates(Reservas{
+		Laboratorio:  p.Laboratorio,
+		DataInicial:  p.DataInicial,
+		DataFinal:    p.DataFinal,
+		HoraInicial:  p.HoraInicial,
+		HoraFinal:    p.HoraFinal,
+		DiaSemana:    p.DiaSemana,
+		Rotativo:     p.Rotativo,
+		Autorizado:   p.Autorizado,
+		AutorizadoBy: p.AutorizadoBy,
+		SolicitadoBy: p.SolicitadoBy,
+		Ativa:        p.Ativa})
+
+	if db.Error != nil {
+		return nil, db.Error
 	}
 	return p, nil
 }
 
 func (p *Reservas) List(db *gorm.DB) (*[]Reservas, error) {
 	Reservass := []Reservas{}
-	//err := db.Debug().Model(&Reservas{}).Limit(100).Find(&Reservass).Error
-	result := db.Find(&Reservass)
-	if result.Error != nil {
-		return nil, result.Error
+	err := db.Debug().Model(&Reservas{}).Limit(100).Find(&Reservass).Error
+	//result := db.Find(&Reservass)
+	if err != nil {
+		return nil, err
 	}
 	return &Reservass, nil
 }

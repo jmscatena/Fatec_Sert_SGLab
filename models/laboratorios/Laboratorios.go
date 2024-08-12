@@ -4,6 +4,8 @@ import (
 	"errors"
 	"github.com/jmscatena/Fatec_Sert_SGLab/models/administrativo"
 	"gorm.io/gorm"
+	"html"
+	"log"
 	"strings"
 	"time"
 )
@@ -15,13 +17,11 @@ type Laboratorios struct {
 	Descricao           string                 `json:"descricao"`
 	Quantidade          int16                  `gorm:"not null; default=20" json:"quantidade"`
 	ComputadorProfessor bool                   `gorm:"default=true" json:"pc_professor"`
-	Rotativo            bool                   `gorm:"default=true" json:"rotativo"`
+	Rotativo            bool                   `gorm:"default=false" json:"rotativo"`
 	CreateUserID        int                    `json:"-"`
 	CreatedBy           administrativo.Usuario `gorm:"foreignKey:CreateUserID;references:ID" json:"created_by"`
-	CreatedAt           time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
 	UpdateUserID        int                    `json:"-"`
 	UpdatedBy           administrativo.Usuario `gorm:"foreignKey:UpdateUserID;references:ID" json:"updated_by"`
-	UpdatedAt           time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
 	Materiais           []*Materiais           `gorm:"many2many:laboratorio_materiais" json:"materiais"`
 }
 
@@ -30,14 +30,31 @@ func (p *Laboratorios) Validate() error {
 	if p.Titulo == "" || p.Titulo == "null" {
 		return errors.New("obrigatório: titulo")
 	}
+	if p.Quantidade == 0 {
+		return errors.New("obrigatório: quantidade de computadores")
+	}
 	return nil
+}
+func (p *Laboratorios) Prepare() {
+	p.Titulo = html.EscapeString(strings.TrimSpace(p.Titulo))
+	p.Descricao = html.EscapeString(strings.TrimSpace(p.Descricao))
+	p.Descricao = html.EscapeString(strings.TrimSpace(p.Descricao))
+	p.Quantidade = int16(int(p.Quantidade))
+	p.CreatedAt = time.Now()
+	p.UpdatedAt = time.Now()
+
+	err := p.Validate()
+	if err != nil {
+		log.Fatalf("Error during validation:%v", err)
+	}
 }
 
 func (p *Laboratorios) Create(db *gorm.DB) (int64, error) {
 	if verr := p.Validate(); verr != nil {
 		return -1, verr
 	}
-	err := db.Debug().Model(&Laboratorios{}).Create(&p).Error
+	p.Prepare()
+	err := db.Debug().Create(&p).Error
 	if err != nil {
 		return 0, err
 	}
@@ -45,18 +62,20 @@ func (p *Laboratorios) Create(db *gorm.DB) (int64, error) {
 }
 
 func (p *Laboratorios) Update(db *gorm.DB, uid uint64) (*Laboratorios, error) {
-	err := db.Debug().Model(&Laboratorios{}).Where("id = ?", uid).Take(&Laboratorios{}).UpdateColumns(
-		map[string]interface{}{
-			"Titulo":              p.Titulo,
-			"Descricao":           p.Descricao,
-			"Quantidade":          p.Quantidade,
-			"ComputadorProfessor": p.ComputadorProfessor,
-			"Rotativo":            p.Rotativo,
-			"Materiais":           p.Materiais,
-			"UpdatedBy":           p.UpdatedBy,
-			"UpdatedAt":           time.Now()}).Error
-	if err != nil {
-		return nil, err
+	p.Prepare()
+	//err := db.Debug().Model(&Laboratorios{}).Where("id = ?", uid).Take(&Laboratorios{}).UpdateColumns(
+	//	map[string]interface{}
+	db = db.Model(Laboratorios{}).Where("id = ?", uid).Updates(
+		Laboratorios{
+			Titulo:              p.Titulo,
+			Descricao:           p.Descricao,
+			Quantidade:          p.Quantidade,
+			ComputadorProfessor: p.ComputadorProfessor,
+			Rotativo:            p.Rotativo,
+			Materiais:           p.Materiais,
+			UpdatedBy:           p.UpdatedBy})
+	if db.Error != nil {
+		return &Laboratorios{}, db.Error
 	}
 	return p, nil
 }
@@ -99,12 +118,4 @@ func (p *Laboratorios) Delete(db *gorm.DB, uid uint64) (int64, error) {
 		return 0, db.Error
 	}
 	return db.RowsAffected, nil
-}
-
-func (p *Laboratorios) DeleteBy(db *gorm.DB, cond string, uid uint64) (int64, error) {
-	result := db.Delete(&Laboratorios{}, cond+" = ?", uid)
-	if result.Error != nil {
-		return 0, result.Error
-	}
-	return result.RowsAffected, nil
 }

@@ -18,7 +18,6 @@ type GestaoMateriais struct {
 	CompraEm   time.Time              `json:"compra_em"`
 	UsuarioID  uint64                 `json:"-"`
 	CreatedBy  administrativo.Usuario `gorm:"foreignKey:UsuarioID" json:"created_by"`
-	CreatedAt  time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
 }
 
 func (p *GestaoMateriais) Validate() error {
@@ -37,24 +36,24 @@ func (p *GestaoMateriais) Create(db *gorm.DB) (int64, error) {
 }
 
 func (p *GestaoMateriais) Update(db *gorm.DB, uid uint64) (*GestaoMateriais, error) {
-	err := db.Debug().Model(&GestaoMateriais{}).Where("id = ?", uid).Take(&GestaoMateriais{}).UpdateColumns(
-		map[string]interface{}{
-			"reserva":    p.Reserva,
-			"disponivel": p.Disponivel,
-			"compra_em":  p.CompraEm,
-			"criado_por": p.CreatedBy}).Error
-	if err != nil {
-		return nil, err
+	db = db.Debug().Model(GestaoMateriais{}).Where("id = ?", uid).Updates(GestaoMateriais{
+		Reserva:    p.Reserva,
+		Disponivel: p.Disponivel,
+		CompraEm:   p.CompraEm,
+		CreatedBy:  p.CreatedBy})
+
+	if db.Error != nil {
+		return nil, db.Error
 	}
 	return p, nil
 }
 
 func (p *GestaoMateriais) List(db *gorm.DB) (*[]GestaoMateriais, error) {
 	GestaoMateriaiss := []GestaoMateriais{}
-	//err := db.Debug().Model(&GestaoMateriais{}).Limit(100).Find(&GestaoMateriaiss).Error
-	result := db.Find(&GestaoMateriaiss)
-	if result.Error != nil {
-		return nil, result.Error
+	err := db.Debug().Model(&GestaoMateriais{}).Limit(100).Find(&GestaoMateriaiss).Error
+	//result := db.Find(&GestaoMateriaiss)
+	if err != nil {
+		return nil, err
 	}
 	return &GestaoMateriaiss, nil
 }

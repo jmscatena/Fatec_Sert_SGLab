@@ -3,6 +3,8 @@ package laboratorios
 import (
 	"errors"
 	"gorm.io/gorm"
+	"html"
+	"log"
 	"strings"
 	"time"
 )
@@ -29,11 +31,23 @@ func (p *Materiais) Validate() error {
 	return nil
 }
 
+func (p *Materiais) Prepare() {
+	p.Titulo = html.EscapeString(strings.TrimSpace(p.Titulo))
+	p.Medida = html.EscapeString(strings.TrimSpace(p.Medida))
+	p.Quantidade = p.Quantidade
+	p.CreatedAt = time.Now()
+	p.UpdatedAt = time.Now()
+
+	err := p.Validate()
+	if err != nil {
+		log.Fatalf("Error during validation:%v", err)
+	}
+}
 func (p *Materiais) Create(db *gorm.DB) (int64, error) {
 	if verr := p.Validate(); verr != nil {
 		return -1, verr
 	}
-	err := db.Debug().Model(&Materiais{}).Create(&p).Error
+	err := db.Debug().Create(&p).Error
 	if err != nil {
 		return 0, err
 	}
@@ -41,24 +55,22 @@ func (p *Materiais) Create(db *gorm.DB) (int64, error) {
 }
 
 func (p *Materiais) Update(db *gorm.DB, uid uint64) (*Materiais, error) {
-	err := db.Debug().Model(&Materiais{}).Where("id = ?", uid).Take(&Materiais{}).UpdateColumns(
-		map[string]interface{}{
-			"Titulo":     p.Titulo,
-			"Quantidade": p.Quantidade,
-			"Medida":     p.Medida,
-			"UpdatedAt":  time.Now()}).Error
-	if err != nil {
-		return nil, err
+	db = db.Debug().Model(&Materiais{}).Where("id = ?", uid).Updates(Materiais{
+		Titulo:     p.Titulo,
+		Quantidade: p.Quantidade,
+		Medida:     p.Medida})
+	if db.Error != nil {
+		return nil, db.Error
 	}
 	return p, nil
 }
 
 func (p *Materiais) List(db *gorm.DB) (*[]Materiais, error) {
 	Materiaiss := []Materiais{}
-	//err := db.Debug().Model(&Materiais{}).Limit(100).Find(&Materiaiss).Error
-	result := db.Find(&Materiaiss)
-	if result.Error != nil {
-		return nil, result.Error
+	err := db.Debug().Model(&Materiais{}).Limit(100).Find(&Materiaiss).Error
+	//result := db.Find(&Materiaiss)
+	if err != nil {
+		return nil, err
 	}
 	return &Materiaiss, nil
 }
