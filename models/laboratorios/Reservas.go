@@ -4,36 +4,43 @@ import (
 	"errors"
 	"github.com/jmscatena/Fatec_Sert_SGLab/models/administrativo"
 	"gorm.io/gorm"
+	"html"
+	"log"
 	"strings"
 	"time"
 )
 
 type Reservas struct {
 	gorm.Model
-	ID            uint64 `gorm:"primary_key;auto_increment" json:"id"`
-	LaboratorioID uint64
-	Laboratorio   Laboratorios           `gorm:"foreignKey: LaboratorioID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"laboratorio"`
-	DataInicial   time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"data_inicio"`
-	DataFinal     time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"data_fim"`
-	HoraInicial   time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"hora_inicio"`
-	HoraFinal     time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"hora_fim"`
-	DiaSemana     string                 `gorm:"not null; default=0.0" json:"dia_semana"`
+	ID            uint64                 `gorm:"primary_key;auto_increment" json:"ID"`
+	LaboratorioID uint64                 `gorm:"default:0" json:"labid"`
+	Laboratorio   Laboratorios           `gorm:"foreignKey: LaboratorioID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"laboratorio"`
+	DataInicial   time.Time              `gorm:"type:DATE;default:CURRENT_TIMESTAMP" json:"data_inicio"`
+	DataFinal     time.Time              `gorm:"type:DATE;default:CURRENT_TIMESTAMP" json:"data_fim"`
+	HoraInicial   time.Time              `gorm:"type:TIME;default:CURRENT_TIMESTAMP" json:"hora_inicio"`
+	HoraFinal     time.Time              `gorm:"type:TIME;default:CURRENT_TIMESTAMP" json:"hora_fim"`
+	DiaSemana     string                 `gorm:"not null;" json:"dia_semana"`
 	Rotativo      bool                   `gorm:"default:false" json:"rotativo"`
-	Autorizado    bool                   `gorm:"not null" json:"autorizado"`
-	AutorizadoID  uint64                 `json:"-"`
-	AutorizadoBy  administrativo.Usuario `gorm:"foreignKey: AutorizadoID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"autorizado_por"`
+	Autorizado    bool                   `gorm:"default:false" json:"autorizado"`
+	AutorizadoID  *uint64                `gorm:"default:null" json:"autorizadoid"`
+	AutorizadoBy  administrativo.Usuario `gorm:"foreignKey: AutorizadoID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"autorizado_por"`
 	AutorizadoAt  time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"autorizado_em"`
-	SolicitadoID  uint64
-	SolicitadoBy  administrativo.Usuario `gorm:"foreignKey: SolicitadoID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"solicitado_por"`
+	SolicitadoID  uint64                 `gorm:"default:0" json:"solicitadoid"`
+	SolicitadoBy  administrativo.Usuario `gorm:"foreignKey: SolicitadoID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"solicitado_por"`
 	SolicitadoAt  time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"solicitado_em"`
 	Ativa         bool                   `gorm:"default:false" json:"ativa"`
-	CreatedAt     time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
 }
 
 func (p *Reservas) Validate() error {
 
 	if p.DiaSemana == "" || p.DiaSemana == "null" {
 		return errors.New("obrigatório: dia da semana")
+	}
+	if p.LaboratorioID <= 0 {
+		return errors.New("obrigatório: laboratório")
+	}
+	if p.SolicitadoID <= 0 {
+		return errors.New("obrigatório: usuário para solicitação")
 	}
 	if p.DataInicial.IsZero() {
 		return errors.New("obrigatório: data inicial")
@@ -49,11 +56,42 @@ func (p *Reservas) Validate() error {
 	}
 	return nil
 }
+func (p *Reservas) Prepare(db *gorm.DB) (err error) {
+	//usuario := administrativo.Usuario{}
+	//laboratorio := Laboratorios{}
+
+	p.DiaSemana = html.EscapeString(strings.TrimSpace(p.DiaSemana))
+	//p.DataInicial, _ = time.Parse("2006-01-02", string(p.DataInicial))
+	//p.DataFinal, _ = time.Parse("2006-01-02", p.DataFinal)
+	p.CreatedAt = time.Now()
+	p.UpdatedAt = time.Now()
+
+	if p.AutorizadoID != nil {
+		err = db.Model(&administrativo.Usuario{}).Where("id = ?", p.AutorizadoID).Take(p.AutorizadoBy).Error
+		//p.AutorizadoBy = usuario
+		p.AutorizadoAt = time.Now()
+	} else {
+		p.AutorizadoID = nil
+	}
+
+	err = db.Model(&administrativo.Usuario{}).Where("id = ?", p.SolicitadoID).Take(&p.SolicitadoBy).Error
+	//p.SolicitadoBy = usuario
+	p.SolicitadoAt = time.Now()
+
+	err = db.Model(&Laboratorios{}).Preload("Materiais").Where("id = ?", p.LaboratorioID).Take(&p.Laboratorio).Error
+	//p.Laboratorio = laboratorio
+
+	if err != nil {
+		log.Fatalf("Error during preparation:%v", err)
+	}
+	return
+}
 
 func (p *Reservas) Create(db *gorm.DB) (int64, error) {
 	if verr := p.Validate(); verr != nil {
 		return -1, verr
 	}
+	p.Prepare(db)
 	err := db.Debug().Omit("ID").Create(&p).Error
 	if err != nil {
 		return 0, err
@@ -83,7 +121,11 @@ func (p *Reservas) Update(db *gorm.DB, uid uint64) (*Reservas, error) {
 
 func (p *Reservas) List(db *gorm.DB) (*[]Reservas, error) {
 	Reservass := []Reservas{}
-	err := db.Debug().Model(&Reservas{}).Limit(100).Find(&Reservass).Error
+	err := db.Debug().Model(&Reservas{}).
+		Preload("Laboratorio").
+		Preload("AutorizadoBy").
+		Preload("SolicitadoBy").
+		Limit(100).Find(&Reservass).Error
 	//result := db.Find(&Reservass)
 	if err != nil {
 		return nil, err
@@ -92,7 +134,11 @@ func (p *Reservas) List(db *gorm.DB) (*[]Reservas, error) {
 }
 
 func (p *Reservas) Find(db *gorm.DB, uid uint64) (*Reservas, error) {
-	err := db.Debug().Model(&Reservas{}).Where("id = ?", uid).Take(&p).Error
+	err := db.Debug().Model(&Reservas{}).
+		Preload("Laboratorio").
+		Preload("AutorizadoBy").
+		Preload("SolicitadoBy").
+		Where("id = ?", uid).Take(&p).Error
 	if err != nil {
 		return &Reservas{}, err
 	}
@@ -106,7 +152,11 @@ func (p *Reservas) FindBy(db *gorm.DB, param string, uid ...interface{}) (*[]Res
 	if len(params) != len(uids) {
 		return nil, errors.New("condição inválida")
 	}
-	result := db.Where(strings.Join(params, " AND "), uids...).Find(&Reservass)
+	result := db.
+		Preload("Laboratorio").
+		Preload("AutorizadoBy").
+		Preload("SolicitadoBy").
+		Where(strings.Join(params, " AND "), uids...).Find(&Reservass)
 	if result.Error != nil {
 		return nil, result.Error
 	}
