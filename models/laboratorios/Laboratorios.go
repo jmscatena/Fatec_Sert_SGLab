@@ -2,7 +2,6 @@ package laboratorios
 
 import (
 	"errors"
-	"fmt"
 	"github.com/jmscatena/Fatec_Sert_SGLab/models/administrativo"
 	"gorm.io/gorm"
 	"html"
@@ -49,12 +48,9 @@ func (p *Laboratorios) Prepare(db *gorm.DB) (err error) {
 		err = db.Model(&administrativo.Usuario{}).Where("id = ?", p.CreateUserID).Take(&usuario).Error
 		p.CreatedBy = usuario
 		p.UpdatedBy = usuario
-		fmt.Println("Usuario:", usuario)
 	} else {
 		err = db.Model(&administrativo.Usuario{}).Where("id = ?", p.UpdateUserID).Take(&usuario).Error
 		p.UpdatedBy = usuario
-		fmt.Println("Usuario:", usuario)
-
 	}
 
 	if err != nil {
