@@ -13,17 +13,17 @@ import (
 
 type Laboratorios struct {
 	gorm.Model
-	ID                  uint64                 `gorm:"primary_key;auto_increment" json:"id"`
+	ID                  uint64                 `gorm:"primary_key;auto_increment" json:"ID"`
 	Titulo              string                 `gorm:"not null" json:"titulo"`
-	Descricao           string                 `json:"descricao,omitempty"`
+	Descricao           string                 `json:"descricao"`
 	Quantidade          int16                  `gorm:"not null; default=20" json:"quantidade"`
 	ComputadorProfessor bool                   `gorm:"default=true" json:"pc_professor"`
 	Rotativo            bool                   `gorm:"default=false" json:"rotativo"`
 	CreateUserID        int                    `json:"createuserid"`
 	CreatedBy           administrativo.Usuario `gorm:"foreignKey:CreateUserID;references:ID" json:"created_by"`
-	UpdateUserID        int                    `gorm:"default=0" json:"updateuserid,omitempty"`
-	UpdatedBy           administrativo.Usuario `gorm:"foreignKey:UpdateUserID;references:ID,omitempty" json:"updated_by"`
-	Materiais           []Materiais            `gorm:"many2many:laboratorio_materiais" json:"materiais,omitempty"`
+	UpdateUserID        int                    `gorm:"default=0" json:"updateuserid"`
+	UpdatedBy           administrativo.Usuario `gorm:"foreignKey:UpdateUserID;references:ID" json:"updated_by"`
+	Materiais           []Materiais            `gorm:"many2many:laboratorio_materiais" json:"materiais"`
 }
 
 func (p *Laboratorios) Validate() error {
@@ -98,7 +98,7 @@ func (p *Laboratorios) List(db *gorm.DB) (*[]Laboratorios, error) {
 	Laboratorioss := []Laboratorios{}
 	//err := db.Debug().Model(&Laboratorios{}).Limit(100).Find(&Laboratorioss).Error
 	//result := db.Find(&Laboratorioss)
-	err := db.Model(&Laboratorios{}).Preload("Materiais").Find(&Laboratorioss).Error
+	err := db.Model(&Laboratorios{}).Preload("CreatedBy").Preload("UpdatedBy").Preload("Materiais").Find(&Laboratorioss).Error
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +106,7 @@ func (p *Laboratorios) List(db *gorm.DB) (*[]Laboratorios, error) {
 }
 
 func (p *Laboratorios) Find(db *gorm.DB, uid uint64) (*Laboratorios, error) {
-	err := db.Debug().Model(&Laboratorios{}).Where("id = ?", uid).Take(&p).Error
+	err := db.Debug().Model(&Laboratorios{}).Preload("CreatedBy").Preload("UpdatedBy").Preload("Materiais").Where("id = ?", uid).Take(&p).Error
 	if err != nil {
 		return &Laboratorios{}, err
 	}
@@ -114,13 +114,17 @@ func (p *Laboratorios) Find(db *gorm.DB, uid uint64) (*Laboratorios, error) {
 }
 
 func (p *Laboratorios) FindBy(db *gorm.DB, param string, uid ...interface{}) (*[]Laboratorios, error) {
+	/*
+		Metodo utilizado para pesquisas com outros campos
+	*/
 	Laboratorioss := []Laboratorios{}
 	params := strings.Split(param, ";")
 	uids := uid[0].([]interface{})
 	if len(params) != len(uids) {
 		return nil, errors.New("condição inválida")
 	}
-	result := db.Where(strings.Join(params, " AND "), uids...).Find(&Laboratorioss)
+	result := db.Model(&Laboratorios{}).Preload("CreatedBy").Preload("UpdatedBy").Preload("Materiais").Where(strings.Join(params, " AND "), uids...).Find(&Laboratorioss)
+	//result := db.Joins("CreatedBy", db.Where(strings.Join(params, " AND "), uids...)).Find(&Laboratorioss)
 	if result.Error != nil {
 		return nil, result.Error
 	}
