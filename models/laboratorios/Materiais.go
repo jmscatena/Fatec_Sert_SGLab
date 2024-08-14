@@ -11,7 +11,7 @@ import (
 
 type Materiais struct {
 	gorm.Model
-	ID         uint64  `gorm:"primary_key;auto_increment" json:"id"`
+	ID         uint64  `gorm:"primary_key;auto_increment" json:"ID"`
 	Titulo     string  `gorm:"not null" json:"titulo"`
 	Quantidade float64 `gorm:"not null; default=0.0" json:"quantidade"`
 	Medida     string  `gorm:"not null" json:"medida"`
@@ -21,7 +21,6 @@ type Materiais struct {
 }
 
 func (p *Materiais) Validate() error {
-
 	if p.Titulo == "" || p.Titulo == "null" {
 		return errors.New("obrigatório: titulo")
 	}
@@ -34,7 +33,7 @@ func (p *Materiais) Validate() error {
 func (p *Materiais) Prepare() {
 	p.Titulo = html.EscapeString(strings.TrimSpace(p.Titulo))
 	p.Medida = html.EscapeString(strings.TrimSpace(p.Medida))
-	p.Quantidade = p.Quantidade
+	p.Quantidade = float64(p.Quantidade)
 	p.CreatedAt = time.Now()
 	p.UpdatedAt = time.Now()
 
@@ -47,7 +46,8 @@ func (p *Materiais) Create(db *gorm.DB) (int64, error) {
 	if verr := p.Validate(); verr != nil {
 		return -1, verr
 	}
-	err := db.Debug().Create(&p).Error
+	p.Prepare()
+	err := db.Debug().Omit("ID").Create(&p).Error
 	if err != nil {
 		return 0, err
 	}

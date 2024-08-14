@@ -54,7 +54,7 @@ func (p *Reservas) Create(db *gorm.DB) (int64, error) {
 	if verr := p.Validate(); verr != nil {
 		return -1, verr
 	}
-	err := db.Debug().Model(&Reservas{}).Create(&p).Error
+	err := db.Debug().Omit("ID").Create(&p).Error
 	if err != nil {
 		return 0, err
 	}

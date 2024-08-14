@@ -29,7 +29,7 @@ func (u *Usuario) Create(db *gorm.DB) (int64, error) {
 		return -2, verr
 	}
 	u.Prepare()
-	err := db.Debug().Create(&u).Error
+	err := db.Debug().Omit("ID").Create(&u).Error
 	if err != nil {
 		return 0, err
 	}

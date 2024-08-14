@@ -20,9 +20,9 @@ func Add[T interfaces.Tables](c *gin.Context, o interfaces.PersistenceHandler[T]
 		if err := c.ShouldBindJSON(&o); err != nil {
 			fmt.Println("ERRO:", err)
 			//msg para deploy
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusText(http.StatusBadRequest), "data": "Erro de JSON"})
+			//c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusText(http.StatusBadRequest), "data": "Erro de JSON"})
 			//msg para dev
-			//c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusText(http.StatusBadRequest), "data": err})
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusText(http.StatusBadRequest), "data": err})
 			return
 		}
 		var handler interfaces.PersistenceHandler[T] = o
