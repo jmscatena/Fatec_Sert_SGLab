@@ -20,9 +20,9 @@ type Laboratorios struct {
 	ComputadorProfessor bool                   `gorm:"default=true" json:"pc_professor"`
 	Rotativo            bool                   `gorm:"default=false" json:"rotativo"`
 	CreateUserID        int                    `json:"createuserid"`
-	CreatedBy           administrativo.Usuario `gorm:"foreignKey:CreateUserID;references:ID" json:"created_by"`
+	CreatedBy           administrativo.Usuario `gorm:"foreignKey:CreateUserID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"createdby"`
 	UpdateUserID        int                    `gorm:"default=0" json:"updateuserid"`
-	UpdatedBy           administrativo.Usuario `gorm:"foreignKey:UpdateUserID;references:ID" json:"updated_by"`
+	UpdatedBy           administrativo.Usuario `gorm:"foreignKey:UpdateUserID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"updatedby"`
 	Materiais           []Materiais            `gorm:"many2many:laboratorio_materiais" json:"materiais"`
 }
 
