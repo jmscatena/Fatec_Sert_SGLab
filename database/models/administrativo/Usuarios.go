@@ -10,6 +10,15 @@ import (
 	"time"
 )
 
+type UsuarioAuth struct {
+	AccessToken  string
+	RefreshToken string
+	AccessUuid   string
+	RefreshUuid  string
+	AtExpires    int64
+	RtExpires    int64
+}
+
 type Usuario struct {
 	gorm.Model
 	ID        uint64 `gorm:"primary_key;auto_increment" json:"ID"`

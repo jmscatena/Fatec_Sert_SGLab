@@ -2,12 +2,12 @@ package main
 
 import (
 	"github.com/jmscatena/Fatec_Sert_SGLab/database"
-	"github.com/jmscatena/Fatec_Sert_SGLab/server"
 )
 
 func main() {
 	//http.ListenAndServe(":8000", nil)
 	database.Init()
-	r := server.NewServer("8000")
+	database.InitDF()
+	r := config.NewServer("8000")
 	r.Run()
 }

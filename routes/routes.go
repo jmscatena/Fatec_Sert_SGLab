@@ -1,22 +1,72 @@
 package routes
 
 import (
-	"github.com/jmscatena/Fatec_Sert_SGLab/models/laboratorios"
-	"strconv"
-
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/jmscatena/Fatec_Sert_SGLab/controllers"
-	"github.com/jmscatena/Fatec_Sert_SGLab/models/administrativo"
+	"github.com/jmscatena/Fatec_Sert_SGLab/database/models/administrativo"
+	laboratorios2 "github.com/jmscatena/Fatec_Sert_SGLab/database/models/laboratorios"
+	"log"
+	"net/http"
+	"strconv"
+	"time"
 )
 
 func ConfigRoutes(router *gin.Engine) *gin.Engine {
 	main := router.Group("/")
 	{
+		login := main.Group("/login")
+		{
+			login.POST("/", gin.BasicAuth(gin.Accounts{
+				"admin": "secret",
+			}), func(c *gin.Context) {
+				// Create a new token object, specifying signing method and the claims
+				// you would like it to contain.
+				token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+					"foo": "bar",
+					"nbf": time.Date(2015, 10, 10, 12, 0, 0, 0, time.UTC).Unix(),
+				})
+
+				// Sign and get the complete encoded token as a string using the secret
+				tokenString, err := token.SignedString(hmacSampleSecret)
+
+				fmt.Println(tokenString, err)
+				c.JSON(http.StatusOK, gin.H{
+					"token": token,
+				})
+			})
+		}
 		user := main.Group("user")
 		{
+
 			var obj administrativo.Usuario
 			user.POST("/", func(context *gin.Context) {
 				controllers.Add[administrativo.Usuario](context, &obj)
+
+				// Parse takes the token string and a function for looking up the key. The latter is especially
+				// useful if you use multiple keys for your application.  The standard is to use 'kid' in the
+				// head of the token to identify which key to use, but the parsed token (head and claims) is provided
+				// to the callback, providing flexibility.
+				token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+					// Don't forget to validate the alg is what you expect:
+					if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+						return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+					}
+
+					// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
+					return hmacSampleSecret, nil
+				})
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				if claims, ok := token.Claims.(jwt.MapClaims); ok {
+					fmt.Println(claims["foo"], claims["nbf"])
+				} else {
+					fmt.Println(err)
+				}
+
 			})
 			user.GET("/:id", func(context *gin.Context) {
 				uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
@@ -44,25 +94,25 @@ func ConfigRoutes(router *gin.Engine) *gin.Engine {
 		}
 		mat := main.Group("materiais")
 		{
-			var obj laboratorios.Materiais
+			var obj laboratorios2.Materiais
 			mat.POST("/", func(context *gin.Context) {
-				controllers.Add[laboratorios.Materiais](context, &obj)
+				controllers.Add[laboratorios2.Materiais](context, &obj)
 			})
 			mat.GET("/:id", func(context *gin.Context) {
 				uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-				controllers.Get[laboratorios.Materiais](context, &obj, uint64(uid))
+				controllers.Get[laboratorios2.Materiais](context, &obj, uint64(uid))
 			})
 
 			mat.GET("/", func(context *gin.Context) {
-				controllers.GetAll[laboratorios.Materiais](context, &obj)
+				controllers.GetAll[laboratorios2.Materiais](context, &obj)
 			})
 			mat.PATCH("/:id", func(context *gin.Context) {
 				uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-				controllers.Modify[laboratorios.Materiais](context, &obj, uint64(uid))
+				controllers.Modify[laboratorios2.Materiais](context, &obj, uint64(uid))
 			})
 			mat.DELETE("/:id", func(context *gin.Context) {
 				uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-				controllers.Erase[laboratorios.Materiais](context, &obj, uint64(uid))
+				controllers.Erase[laboratorios2.Materiais](context, &obj, uint64(uid))
 			})
 
 			/*
@@ -76,71 +126,71 @@ func ConfigRoutes(router *gin.Engine) *gin.Engine {
 		}
 		lab := main.Group("laboratorios")
 		{
-			var obj laboratorios.Laboratorios
+			var obj laboratorios2.Laboratorios
 			lab.POST("/", func(context *gin.Context) {
-				controllers.Add[laboratorios.Laboratorios](context, &obj)
+				controllers.Add[laboratorios2.Laboratorios](context, &obj)
 			})
 			lab.GET("/:id", func(context *gin.Context) {
 				uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-				controllers.Get[laboratorios.Laboratorios](context, &obj, uint64(uid))
+				controllers.Get[laboratorios2.Laboratorios](context, &obj, uint64(uid))
 			})
 
 			lab.GET("/", func(context *gin.Context) {
-				controllers.GetAll[laboratorios.Laboratorios](context, &obj)
+				controllers.GetAll[laboratorios2.Laboratorios](context, &obj)
 			})
 			lab.PATCH("/:id", func(context *gin.Context) {
 				uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-				controllers.Modify[laboratorios.Laboratorios](context, &obj, uint64(uid))
+				controllers.Modify[laboratorios2.Laboratorios](context, &obj, uint64(uid))
 			})
 			lab.DELETE("/:id", func(context *gin.Context) {
 				uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-				controllers.Erase[laboratorios.Laboratorios](context, &obj, uint64(uid))
+				controllers.Erase[laboratorios2.Laboratorios](context, &obj, uint64(uid))
 			})
 		}
 		res := main.Group("reservas")
 		{
-			var obj laboratorios.Reservas
+			var obj laboratorios2.Reservas
 			res.POST("/", func(context *gin.Context) {
-				controllers.Add[laboratorios.Reservas](context, &obj)
+				controllers.Add[laboratorios2.Reservas](context, &obj)
 			})
 			res.GET("/:id", func(context *gin.Context) {
 				uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-				controllers.Get[laboratorios.Reservas](context, &obj, uint64(uid))
+				controllers.Get[laboratorios2.Reservas](context, &obj, uint64(uid))
 			})
 
 			res.GET("/", func(context *gin.Context) {
-				controllers.GetAll[laboratorios.Reservas](context, &obj)
+				controllers.GetAll[laboratorios2.Reservas](context, &obj)
 			})
 			res.PATCH("/:id", func(context *gin.Context) {
 				uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-				controllers.Modify[laboratorios.Reservas](context, &obj, uint64(uid))
+				controllers.Modify[laboratorios2.Reservas](context, &obj, uint64(uid))
 			})
 			res.DELETE("/:id", func(context *gin.Context) {
 				uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-				controllers.Erase[laboratorios.Reservas](context, &obj, uint64(uid))
+				controllers.Erase[laboratorios2.Reservas](context, &obj, uint64(uid))
 			})
 		}
 		ges := main.Group("gestao")
 		{
-			var obj laboratorios.GestaoMateriais
+			var obj laboratorios2.GestaoMateriais
 			ges.POST("/", func(context *gin.Context) {
-				controllers.Add[laboratorios.GestaoMateriais](context, &obj)
+				controllers.Add[laboratorios2.GestaoMateriais](context, &obj)
 			})
 			ges.GET("/:id", func(context *gin.Context) {
 				uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-				controllers.Get[laboratorios.GestaoMateriais](context, &obj, uint64(uid))
+				controllers.Get[laboratorios2.GestaoMateriais](context, &obj, uint64(uid))
 			})
 
 			ges.GET("/", func(context *gin.Context) {
-				controllers.GetAll[laboratorios.GestaoMateriais](context, &obj)
+				controllers.GetAll[laboratorios2.GestaoMateriais](context, &obj)
 			})
 			ges.PATCH("/:id", func(context *gin.Context) {
 				uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-				controllers.Modify[laboratorios.GestaoMateriais](context, &obj, uint64(uid))
+				controllers.Modify[laboratorios2.GestaoMateriais](context, &obj, uint64(uid))
 			})
 			ges.DELETE("/:id", func(context *gin.Context) {
 				uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-				controllers.Erase[laboratorios.GestaoMateriais](context, &obj, uint64(uid))
+				controllers.Erase[laboratorios2.GestaoMateriais](context, &obj, uint64(uid))
 			})
 		}
 		/*

@@ -2,7 +2,7 @@ package laboratorios
 
 import (
 	"errors"
-	"github.com/jmscatena/Fatec_Sert_SGLab/models/administrativo"
+	"github.com/jmscatena/Fatec_Sert_SGLab/database/models/administrativo"
 	"gorm.io/gorm"
 	"html"
 	"log"

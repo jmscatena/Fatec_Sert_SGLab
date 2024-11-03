@@ -1,6 +1,7 @@
 package database
 
 import (
+	"github.com/go-redis/redis/v7"
 	"github.com/jmscatena/Fatec_Sert_SGLab/database/migrations"
 	"log"
 	"os"
@@ -36,4 +37,20 @@ func Init() (*gorm.DB, error) {
 	}
 	migrations.RunMigrate(db)
 	return db, err
+}
+
+func InitDF() error {
+	var client *redis.Client
+	dsn := os.Getenv("REDIS_DSN")
+	if len(dsn) == 0 {
+		dsn = "localhost:6379"
+	}
+	client = redis.NewClient(&redis.Options{
+		Addr: dsn, //redis port
+	})
+	_, err := client.Ping().Result()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	return nil
 }

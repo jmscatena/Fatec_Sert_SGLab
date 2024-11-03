@@ -1,0 +1,12 @@
+Para trabalhar com jwt deveemos armazenar em um bd de memoria (redis) as chaves autenticadas... quando a chave expira..
+devemos verificar o redis, se existe uma chave, renove o token e substitua do redis. Caso nao exista, redireciona para o
+login....
+
+Login --> autentica --> cria registro no redis
+validacao --> check token --> se nao expirou --> verificar se a chave bate com o redis --> caso contrario
+expired token --> se tem registro no redis, atualiza --> caso contrario redireciona para login
+
+desconectar quando sair --> logout --> colocar js no frontend para invalidar o jwt token quando sair da pagina ou fechar
+a aba
+
+expired token em 15min

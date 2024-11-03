@@ -1,14 +1,14 @@
-package interfaces
+package utils
 
 import (
-	"github.com/jmscatena/Fatec_Sert_SGLab/models/administrativo"
-	"github.com/jmscatena/Fatec_Sert_SGLab/models/laboratorios"
+	"github.com/jmscatena/Fatec_Sert_SGLab/database/models/administrativo"
+	laboratorios2 "github.com/jmscatena/Fatec_Sert_SGLab/database/models/laboratorios"
 	"gorm.io/gorm"
 )
 
 type Tables interface {
-	administrativo.Usuario | laboratorios.GestaoMateriais |
-		laboratorios.Laboratorios | laboratorios.Reservas | laboratorios.Materiais
+	administrativo.Usuario | laboratorios2.GestaoMateriais |
+		laboratorios2.Laboratorios | laboratorios2.Reservas | laboratorios2.Materiais
 }
 
 type PersistenceHandler[T Tables] interface {

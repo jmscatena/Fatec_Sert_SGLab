@@ -6,8 +6,8 @@ import (
 	"reflect"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jmscatena/Fatec_Sert_SGLab/interfaces"
 	"github.com/jmscatena/Fatec_Sert_SGLab/services"
+	"github.com/jmscatena/Fatec_Sert_SGLab/utils"
 )
 
 func Index(c *gin.Context) {
@@ -15,7 +15,7 @@ func Index(c *gin.Context) {
 
 }
 
-func Add[T interfaces.Tables](c *gin.Context, o interfaces.PersistenceHandler[T]) {
+func Add[T utils.Tables](c *gin.Context, o utils.PersistenceHandler[T]) {
 	if reflect.TypeOf(o) != nil {
 		if err := c.ShouldBindJSON(&o); err != nil {
 			fmt.Println("ERRO:", err)
@@ -25,7 +25,7 @@ func Add[T interfaces.Tables](c *gin.Context, o interfaces.PersistenceHandler[T]
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusText(http.StatusBadRequest), "data": err})
 			return
 		}
-		var handler interfaces.PersistenceHandler[T] = o
+		var handler utils.PersistenceHandler[T] = o
 		code, cerr := services.New(handler)
 
 		if cerr != nil {
@@ -35,7 +35,7 @@ func Add[T interfaces.Tables](c *gin.Context, o interfaces.PersistenceHandler[T]
 	}
 }
 
-func Modify[T interfaces.Tables](c *gin.Context, o interfaces.PersistenceHandler[T], uid uint64) {
+func Modify[T utils.Tables](c *gin.Context, o utils.PersistenceHandler[T], uid uint64) {
 	if reflect.TypeOf(o) != nil {
 		if err := c.ShouldBindJSON(&o); err != nil {
 			fmt.Println("ERRO:", err)
@@ -46,7 +46,7 @@ func Modify[T interfaces.Tables](c *gin.Context, o interfaces.PersistenceHandler
 			return
 
 		}
-		var handler interfaces.PersistenceHandler[T] = o
+		var handler utils.PersistenceHandler[T] = o
 		code, cerr := services.Update(handler, uid)
 
 		if cerr != nil {
@@ -56,9 +56,9 @@ func Modify[T interfaces.Tables](c *gin.Context, o interfaces.PersistenceHandler
 	}
 }
 
-func Erase[T interfaces.Tables](c *gin.Context, o interfaces.PersistenceHandler[T], uid uint64) {
+func Erase[T utils.Tables](c *gin.Context, o utils.PersistenceHandler[T], uid uint64) {
 	if reflect.TypeOf(o) != nil {
-		var handler interfaces.PersistenceHandler[T] = o
+		var handler utils.PersistenceHandler[T] = o
 		code, cerr := services.Del(handler, uid)
 
 		if cerr != nil {
@@ -68,13 +68,13 @@ func Erase[T interfaces.Tables](c *gin.Context, o interfaces.PersistenceHandler[
 	}
 }
 
-func Get[T interfaces.Tables](c *gin.Context, o interfaces.PersistenceHandler[T], uid uint64) {
+func Get[T utils.Tables](c *gin.Context, o utils.PersistenceHandler[T], uid uint64) {
 	if reflect.TypeOf(o) != nil {
 		if uid == 0 {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusText(http.StatusBadRequest), "data": "{}"})
 			return
 		}
-		var handler interfaces.PersistenceHandler[T] = o
+		var handler utils.PersistenceHandler[T] = o
 		rec, cerr := services.Get(handler, uid)
 
 		if cerr != nil {
@@ -85,9 +85,9 @@ func Get[T interfaces.Tables](c *gin.Context, o interfaces.PersistenceHandler[T]
 	}
 }
 
-func GetAll[T interfaces.Tables](c *gin.Context, o interfaces.PersistenceHandler[T]) {
+func GetAll[T utils.Tables](c *gin.Context, o utils.PersistenceHandler[T]) {
 	if reflect.TypeOf(o) != nil {
-		var handler interfaces.PersistenceHandler[T] = o
+		var handler utils.PersistenceHandler[T] = o
 		rec, cerr := services.GetAll(handler)
 		if cerr != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusText(http.StatusBadRequest),
@@ -97,12 +97,12 @@ func GetAll[T interfaces.Tables](c *gin.Context, o interfaces.PersistenceHandler
 	}
 }
 
-func GetBy[T interfaces.Tables](c *gin.Context, o interfaces.PersistenceHandler[T], param string, uid ...interface{}) {
+func GetBy[T utils.Tables](c *gin.Context, o utils.PersistenceHandler[T], param string, uid ...interface{}) {
 	if reflect.TypeOf(o) != nil {
 		if len(uid) == 0 {
 			c.JSON(http.StatusNotFound, gin.H{"status": http.StatusText(http.StatusNotFound), "data": "No Data"})
 		}
-		var handler interfaces.PersistenceHandler[T] = o
+		var handler utils.PersistenceHandler[T] = o
 		rec, cerr := services.GetBy(handler, param, uid)
 
 		if cerr != nil {
