@@ -2,12 +2,11 @@ package controllers
 
 import (
 	"fmt"
-	"net/http"
-	"reflect"
-
 	"github.com/gin-gonic/gin"
 	"github.com/jmscatena/Fatec_Sert_SGLab/services"
 	"github.com/jmscatena/Fatec_Sert_SGLab/utils"
+	"net/http"
+	"reflect"
 )
 
 func Index(c *gin.Context) {

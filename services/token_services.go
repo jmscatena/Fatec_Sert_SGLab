@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/jmscatena/Fatec_Sert_SGLab/database/models/administrativo"
@@ -19,15 +20,15 @@ func createToken(user administrativo.Usuario) (string, error) {
 	secretkey := os.Getenv("TOKEN_SECRET_KEY")
 
 	claims := jwt.MapClaims{}
-	claims["user_id"] = user.ID
+	claims["uuid"] = user.ID
 	claims["name"] = user.Nome
-	claims["exp"] = time.Now().Add(time.Hour * 1).Unix() // Token valid for 1 hour
+	claims["exp"] = time.Now().Add(time.Minute * 10).Unix() // Token valid for 1 hour
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(secretkey)
 }
 
-/* Funcao NewAccessToken ok */
+/* Funcao VerifyToken ok */
 func verifyToken(tokenString string) (*jwt.Token, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return os.Getenv("TOKEN_SECRET_KEY"), nil
@@ -39,4 +40,13 @@ func verifyToken(tokenString string) (*jwt.Token, error) {
 		return nil, fmt.Errorf("invalid token")
 	}
 	return token, nil
+}
+
+func revokeToken(tokenString string) error {
+	ctx := context.Background()
+	err := s.redisClient.Del(ctx, tokenString).Err()
+	if err != nil {
+		return fmt.Errorf("error deleting token from Redis: %w", err)
+	}
+	return nil
 }

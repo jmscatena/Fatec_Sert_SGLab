@@ -1,72 +1,26 @@
 package routes
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/jmscatena/Fatec_Sert_SGLab/controllers"
 	"github.com/jmscatena/Fatec_Sert_SGLab/database/models/administrativo"
 	laboratorios2 "github.com/jmscatena/Fatec_Sert_SGLab/database/models/laboratorios"
-	"log"
-	"net/http"
 	"strconv"
-	"time"
 )
 
 func ConfigRoutes(router *gin.Engine) *gin.Engine {
 	main := router.Group("/")
 	{
-		login := main.Group("/login")
+		/*login := main.Group("/login")
 		{
-			login.POST("/", gin.BasicAuth(gin.Accounts{
-				"admin": "secret",
-			}), func(c *gin.Context) {
-				// Create a new token object, specifying signing method and the claims
-				// you would like it to contain.
-				token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-					"foo": "bar",
-					"nbf": time.Date(2015, 10, 10, 12, 0, 0, 0, time.UTC).Unix(),
-				})
 
-				// Sign and get the complete encoded token as a string using the secret
-				tokenString, err := token.SignedString(hmacSampleSecret)
-
-				fmt.Println(tokenString, err)
-				c.JSON(http.StatusOK, gin.H{
-					"token": token,
-				})
-			})
-		}
+		}*/
 		user := main.Group("user")
 		{
 
 			var obj administrativo.Usuario
 			user.POST("/", func(context *gin.Context) {
 				controllers.Add[administrativo.Usuario](context, &obj)
-
-				// Parse takes the token string and a function for looking up the key. The latter is especially
-				// useful if you use multiple keys for your application.  The standard is to use 'kid' in the
-				// head of the token to identify which key to use, but the parsed token (head and claims) is provided
-				// to the callback, providing flexibility.
-				token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-					// Don't forget to validate the alg is what you expect:
-					if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-						return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-					}
-
-					// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
-					return hmacSampleSecret, nil
-				})
-				if err != nil {
-					log.Fatal(err)
-				}
-
-				if claims, ok := token.Claims.(jwt.MapClaims); ok {
-					fmt.Println(claims["foo"], claims["nbf"])
-				} else {
-					fmt.Println(err)
-				}
-
 			})
 			user.GET("/:id", func(context *gin.Context) {
 				uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)

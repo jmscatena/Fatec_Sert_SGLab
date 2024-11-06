@@ -2,6 +2,7 @@ package administrativo
 
 import (
 	"errors"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"html"
@@ -10,27 +11,16 @@ import (
 	"time"
 )
 
-type UsuarioAuth struct {
-	AccessToken  string
-	RefreshToken string
-	AccessUuid   string
-	RefreshUuid  string
-	AtExpires    int64
-	RtExpires    int64
-}
-
 type Usuario struct {
 	gorm.Model
-	ID        uint64 `gorm:"primary_key;auto_increment" json:"ID"`
-	Nome      string `gorm:"size:255;not null;unique" json:"nome"`
-	Email     string `gorm:"size:100;not null,email;" json:"email"`
-	Senha     string `gorm:"size:100;not null;" json:"-"`
-	Ativo     bool   `gorm:"default:True;" json:"ativo"`
-	Admin     bool   `gorm:"default:False;"`
-	Professor bool   `gorm:"default:False;"`
-	Tecnico   bool   `gorm:"default:False;"`
-	//CreatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"criado_em"`
-	//UpdatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"atualizado_em"`
+	UID       uuid.UUID `gorm:"primary_key;type:uuid;default:uuid_generate_v4()" json:"ID"`
+	Nome      string    `gorm:"size:255;not null;unique" json:"nome"`
+	Email     string    `gorm:"size:100;not null,email;" json:"email"`
+	Senha     string    `gorm:"size:100;not null;" json:"-"`
+	Ativo     bool      `gorm:"default:True;" json:"ativo"`
+	Admin     bool      `gorm:"default:False;"`
+	Professor bool      `gorm:"default:False;"`
+	Tecnico   bool      `gorm:"default:False;"`
 }
 
 func (u *Usuario) Create(db *gorm.DB) (int64, error) {

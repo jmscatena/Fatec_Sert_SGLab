@@ -33,7 +33,7 @@ func Init() (*gorm.DB, error) {
 	db, err := gorm.Open(postgres.Open(dbURL), &gorm.Config{})
 
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalln("Erro no carregamento do SGBD", err)
 	}
 	migrations.RunMigrate(db)
 	return db, err
@@ -50,7 +50,7 @@ func InitDF() error {
 	})
 	_, err := client.Ping().Result()
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalln("Erro no carregamento do Redis:", err)
 	}
 	return nil
 }

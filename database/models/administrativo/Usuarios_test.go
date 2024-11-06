@@ -11,27 +11,10 @@ import (
 	"time"
 )
 
-func TestHash(t *testing.T) {
-	type args struct {
-		Senha string
-	}
-	tests := []struct {
-		name string
-		args args
-		want []byte
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := Hash(tt.args.Senha); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Hash() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+func ShouldUsuarioCreateCorrect(t *testing.T) {
 }
 
-func TestUsuario_Create(t *testing.T) {
+func TestUsuario_Create_Correct(t *testing.T) {
 	type fields struct {
 		Model     gorm.Model
 		ID        uint64
@@ -48,7 +31,7 @@ func TestUsuario_Create(t *testing.T) {
 	type args struct {
 		db *gorm.DB
 	}
-	err := godotenv.Load("../../.env")
+	err := godotenv.Load("../../../.env")
 	if err != nil {
 
 		log.Fatalf("Error Loading Configuration File")
@@ -88,7 +71,6 @@ func TestUsuario_Create(t *testing.T) {
 				Email:     tt.fields.Email,
 				Senha:     tt.fields.Senha,
 				Professor: tt.fields.Professor,
-				CreatedAt: tt.fields.CreatedAt,
 			}
 			got, err := u.Create(tt.args.db)
 			if (err != nil) != tt.wantErr {
@@ -142,8 +124,6 @@ func TestUsuario_Delete(t *testing.T) {
 				Admin:     tt.fields.Admin,
 				Professor: tt.fields.Professor,
 				Tecnico:   tt.fields.Tecnico,
-				CreatedAt: tt.fields.CreatedAt,
-				UpdatedAt: tt.fields.UpdatedAt,
 			}
 			got, err := u.Delete(tt.args.db, tt.args.uid)
 			if (err != nil) != tt.wantErr {
@@ -197,8 +177,6 @@ func TestUsuario_DeleteBy(t *testing.T) {
 				Admin:     tt.fields.Admin,
 				Professor: tt.fields.Professor,
 				Tecnico:   tt.fields.Tecnico,
-				CreatedAt: tt.fields.CreatedAt,
-				UpdatedAt: tt.fields.UpdatedAt,
 			}
 			got, err := u.DeleteBy(tt.args.db, tt.args.cond, tt.args.uid)
 			if (err != nil) != tt.wantErr {
@@ -251,8 +229,6 @@ func TestUsuario_Find(t *testing.T) {
 				Admin:     tt.fields.Admin,
 				Professor: tt.fields.Professor,
 				Tecnico:   tt.fields.Tecnico,
-				CreatedAt: tt.fields.CreatedAt,
-				UpdatedAt: tt.fields.UpdatedAt,
 			}
 			got, err := u.Find(tt.args.db, tt.args.uid)
 			if (err != nil) != tt.wantErr {
@@ -306,8 +282,6 @@ func TestUsuario_FindBy(t *testing.T) {
 				Admin:     tt.fields.Admin,
 				Professor: tt.fields.Professor,
 				Tecnico:   tt.fields.Tecnico,
-				CreatedAt: tt.fields.CreatedAt,
-				UpdatedAt: tt.fields.UpdatedAt,
 			}
 			got, err := u.FindBy(tt.args.db, tt.args.param, tt.args.uid...)
 			if (err != nil) != tt.wantErr {
@@ -359,8 +333,6 @@ func TestUsuario_List(t *testing.T) {
 				Admin:     tt.fields.Admin,
 				Professor: tt.fields.Professor,
 				Tecnico:   tt.fields.Tecnico,
-				CreatedAt: tt.fields.CreatedAt,
-				UpdatedAt: tt.fields.UpdatedAt,
 			}
 			got, err := u.List(tt.args.db)
 			if (err != nil) != tt.wantErr {
@@ -406,8 +378,6 @@ func TestUsuario_Prepare(t *testing.T) {
 				Admin:     tt.fields.Admin,
 				Professor: tt.fields.Professor,
 				Tecnico:   tt.fields.Tecnico,
-				CreatedAt: tt.fields.CreatedAt,
-				UpdatedAt: tt.fields.UpdatedAt,
 			}
 			u.Prepare()
 		})
@@ -453,8 +423,6 @@ func TestUsuario_Update(t *testing.T) {
 				Admin:     tt.fields.Admin,
 				Professor: tt.fields.Professor,
 				Tecnico:   tt.fields.Tecnico,
-				CreatedAt: tt.fields.CreatedAt,
-				UpdatedAt: tt.fields.UpdatedAt,
 			}
 			got, err := u.Update(tt.args.db, tt.args.uid)
 			if (err != nil) != tt.wantErr {
@@ -505,8 +473,6 @@ func TestUsuario_Validate(t *testing.T) {
 				Admin:     tt.fields.Admin,
 				Professor: tt.fields.Professor,
 				Tecnico:   tt.fields.Tecnico,
-				CreatedAt: tt.fields.CreatedAt,
-				UpdatedAt: tt.fields.UpdatedAt,
 			}
 			if err := u.Validate(tt.args.action); (err != nil) != tt.wantErr {
 				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
