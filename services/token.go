@@ -1,7 +1,6 @@
 package services
 
 import (
-	"context"
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/jmscatena/Fatec_Sert_SGLab/database/models/administrativo"
@@ -43,10 +42,10 @@ func verifyToken(tokenString string) (*jwt.Token, error) {
 }
 
 func revokeToken(tokenString string) error {
-	ctx := context.Background()
+	/*ctx := context.Background()
 	err := s.redisClient.Del(ctx, tokenString).Err()
 	if err != nil {
 		return fmt.Errorf("error deleting token from Redis: %w", err)
-	}
+	}*/
 	return nil
 }
