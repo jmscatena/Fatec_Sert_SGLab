@@ -1,4 +1,4 @@
-package utils
+package handlers
 
 import (
 	"github.com/jmscatena/Fatec_Sert_SGLab/database/models/administrativo"
@@ -12,7 +12,7 @@ type Tables interface {
 }
 
 type PersistenceHandler[T Tables] interface {
-	Create(db *gorm.DB) (int64, error)
+	Create(db *gorm.DB) (string, error)
 	List(db *gorm.DB) (*[]T, error)
 	Update(db *gorm.DB, uid uint64) (*T, error)
 	Find(db *gorm.DB, uid uint64) (*T, error)
