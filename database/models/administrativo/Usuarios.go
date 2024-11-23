@@ -13,14 +13,12 @@ import (
 
 type Usuario struct {
 	gorm.Model
-	UID       uuid.UUID `gorm:"primary_key;type:uuid;default:uuid_generate_v4()" json:"ID"`
-	Nome      string    `gorm:"size:255;not null;unique" json:"nome"`
-	Email     string    `gorm:"size:100;not null,email;" json:"email"`
-	Senha     string    `gorm:"size:100;not null;" json:"-"`
-	Ativo     bool      `gorm:"default:True;" json:"ativo"`
-	Admin     bool      `gorm:"default:False;"`
-	Professor bool      `gorm:"default:False;"`
-	Tecnico   bool      `gorm:"default:False;"`
+	UID    uuid.UUID `gorm:"primary_key;type:uuid;default:uuid_generate_v4()" json:"ID"`
+	Nome   string    `gorm:"size:255;not null;unique" json:"nome"`
+	Email  string    `gorm:"size:100;not null,email;" json:"email"`
+	Senha  string    `gorm:"size:100;not null;" json:"-"`
+	Ativo  bool      `gorm:"default:True;" json:"ativo"`
+	Perfil bool      `gorm:"default:False;"`
 }
 
 func (u *Usuario) Create(db *gorm.DB) (int64, error) {
