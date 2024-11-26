@@ -2,6 +2,7 @@ package laboratorios
 
 import (
 	"errors"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"html"
 	"log"
@@ -11,10 +12,10 @@ import (
 
 type Materiais struct {
 	gorm.Model
-	ID         uint64  `gorm:"primary_key;auto_increment" json:"ID"`
-	Titulo     string  `gorm:"not null" json:"titulo"`
-	Quantidade float64 `gorm:"not null; default=0.0" json:"quantidade"`
-	Medida     string  `gorm:"not null" json:"medida"`
+	UID        uuid.UUID `gorm:"primary_key;type:uuid;default:uuid_generate_v4()" json:"ID"`
+	Titulo     string    `gorm:"not null" json:"titulo"`
+	Quantidade float64   `gorm:"not null; default=0.0" json:"quantidade"`
+	Medida     string    `gorm:"not null" json:"medida"`
 
 	CreatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
 	UpdatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
@@ -42,19 +43,19 @@ func (p *Materiais) Prepare() {
 		log.Fatalf("Error during validation:%v", err)
 	}
 }
-func (p *Materiais) Create(db *gorm.DB) (int64, error) {
+func (p *Materiais) Create(db *gorm.DB) (uuid.UUID, error) {
 	if verr := p.Validate(); verr != nil {
-		return -1, verr
+		return uuid.Nil, verr
 	}
 	p.Prepare()
 	err := db.Debug().Omit("ID").Create(&p).Error
 	if err != nil {
-		return 0, err
+		return uuid.Nil, err
 	}
-	return int64(p.ID), nil
+	return p.UID, nil
 }
 
-func (p *Materiais) Update(db *gorm.DB, uid uint64) (*Materiais, error) {
+func (p *Materiais) Update(db *gorm.DB, uid uuid.UUID) (*Materiais, error) {
 	db = db.Debug().Model(&Materiais{}).Where("id = ?", uid).Updates(Materiais{
 		Titulo:     p.Titulo,
 		Quantidade: p.Quantidade,
@@ -75,7 +76,7 @@ func (p *Materiais) List(db *gorm.DB) (*[]Materiais, error) {
 	return &Materiaiss, nil
 }
 
-func (p *Materiais) Find(db *gorm.DB, uid uint64) (*Materiais, error) {
+func (p *Materiais) Find(db *gorm.DB, uid uuid.UUID) (*Materiais, error) {
 	err := db.Debug().Model(&Materiais{}).Where("id = ?", uid).Take(&p).Error
 	if err != nil {
 		return &Materiais{}, err
@@ -97,7 +98,7 @@ func (p *Materiais) FindBy(db *gorm.DB, param string, uid ...interface{}) (*[]Ma
 	return &Materiaiss, nil
 }
 
-func (p *Materiais) Delete(db *gorm.DB, uid uint64) (int64, error) {
+func (p *Materiais) Delete(db *gorm.DB, uid uuid.UUID) (int64, error) {
 	db = db.Delete(&Materiais{}, "id = ? ", uid)
 	if db.Error != nil {
 		return 0, db.Error
@@ -105,7 +106,7 @@ func (p *Materiais) Delete(db *gorm.DB, uid uint64) (int64, error) {
 	return db.RowsAffected, nil
 }
 
-func (p *Materiais) DeleteBy(db *gorm.DB, cond string, uid uint64) (int64, error) {
+func (p *Materiais) DeleteBy(db *gorm.DB, cond string, uid uuid.UUID) (int64, error) {
 	result := db.Delete(&Materiais{}, cond+" = ?", uid)
 	if result.Error != nil {
 		return 0, result.Error

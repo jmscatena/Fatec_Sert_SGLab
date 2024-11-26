@@ -2,10 +2,11 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/jmscatena/Fatec_Sert_SGLab/controllers"
 	"github.com/jmscatena/Fatec_Sert_SGLab/database/models/administrativo"
 	laboratorios2 "github.com/jmscatena/Fatec_Sert_SGLab/database/models/laboratorios"
-	"strconv"
+	"github.com/jmscatena/Fatec_Sert_SGLab/middleware"
 )
 
 func ConfigRoutes(router *gin.Engine) *gin.Engine {
@@ -15,58 +16,59 @@ func ConfigRoutes(router *gin.Engine) *gin.Engine {
 		{
 
 		}*/
-		user := main.Group("user")
+		userRoute := main.Group("user")
 		{
 
-			var obj administrativo.Usuario
-			user.POST("/", func(context *gin.Context) {
-				controllers.Add[administrativo.Usuario](context, &obj)
+			var user administrativo.Usuario
+			userRoute.POST("/", func(context *gin.Context) {
+				controllers.Add[administrativo.Usuario](context, &user)
 			})
-			user.GET("/:id", func(context *gin.Context) {
-				uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-				controllers.Get[administrativo.Usuario](context, &obj, uint64(uid))
+			userRoute.GET("/:id", func(context *gin.Context) {
+				uid, _ := uuid.Parse(context.Param("id"))
+				controllers.Get[administrativo.Usuario](context, &user, uid)
 			})
 
-			user.GET("/", func(context *gin.Context) {
-				controllers.GetAll[administrativo.Usuario](context, &obj)
+			userRoute.GET("/", func(context *gin.Context) {
+				controllers.GetAll[administrativo.Usuario](context, &user)
 			})
-			user.GET("/admin/", func(context *gin.Context) {
+			userRoute.GET("/admin/", func(context *gin.Context) {
 				//colocar as configuracoes para os params q virao do frontend
 				params := "admin=?;ativo=?"
-				controllers.GetBy[administrativo.Usuario](context, &obj, params, false, true)
+				controllers.GetBy[administrativo.Usuario](context, &user, params, false, true)
 			})
 
-			user.PATCH("/:id", func(context *gin.Context) {
-				uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-				controllers.Modify[administrativo.Usuario](context, &obj, uint64(uid))
+			userRoute.PATCH("/:id", func(context *gin.Context) {
+				uid, _ := uuid.Parse(context.Param("id"))
+				controllers.Modify[administrativo.Usuario](context, &user, uid)
 			})
-			user.DELETE("/:id", func(context *gin.Context) {
-				uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-				controllers.Erase[administrativo.Usuario](context, &obj, uint64(uid))
+			userRoute.DELETE("/:id", func(context *gin.Context) {
+				uid, _ := uuid.Parse(context.Param("id"))
+				controllers.Erase[administrativo.Usuario](context, &user, uid)
 			})
 
 		}
-		mat := main.Group("materiais")
+		userRoute.Use(middleware.Auth())
+		matRoute := main.Group("materiais")
 		{
-			var obj laboratorios2.Materiais
-			mat.POST("/", func(context *gin.Context) {
-				controllers.Add[laboratorios2.Materiais](context, &obj)
+			var mat laboratorios2.Materiais
+			matRoute.POST("/", func(context *gin.Context) {
+				controllers.Add[laboratorios2.Materiais](context, &mat)
 			})
-			mat.GET("/:id", func(context *gin.Context) {
-				uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-				controllers.Get[laboratorios2.Materiais](context, &obj, uint64(uid))
+			matRoute.GET("/:id", func(context *gin.Context) {
+				uid, _ := uuid.Parse(context.Param("id"))
+				controllers.Get[laboratorios2.Materiais](context, &mat, uid)
 			})
 
-			mat.GET("/", func(context *gin.Context) {
-				controllers.GetAll[laboratorios2.Materiais](context, &obj)
+			matRoute.GET("/", func(context *gin.Context) {
+				controllers.GetAll[laboratorios2.Materiais](context, &mat)
 			})
-			mat.PATCH("/:id", func(context *gin.Context) {
-				uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-				controllers.Modify[laboratorios2.Materiais](context, &obj, uint64(uid))
+			matRoute.PATCH("/:id", func(context *gin.Context) {
+				uid, _ := uuid.Parse(context.Param("id"))
+				controllers.Modify[laboratorios2.Materiais](context, &mat, uid)
 			})
-			mat.DELETE("/:id", func(context *gin.Context) {
-				uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-				controllers.Erase[laboratorios2.Materiais](context, &obj, uint64(uid))
+			matRoute.DELETE("/:id", func(context *gin.Context) {
+				uid, _ := uuid.Parse(context.Param("id"))
+				controllers.Erase[laboratorios2.Materiais](context, &mat, uid)
 			})
 
 			/*
@@ -85,20 +87,20 @@ func ConfigRoutes(router *gin.Engine) *gin.Engine {
 				controllers.Add[laboratorios2.Laboratorios](context, &obj)
 			})
 			lab.GET("/:id", func(context *gin.Context) {
-				uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-				controllers.Get[laboratorios2.Laboratorios](context, &obj, uint64(uid))
+				uid, _ := uuid.Parse(context.Param("id"))
+				controllers.Get[laboratorios2.Laboratorios](context, &obj, uid)
 			})
 
 			lab.GET("/", func(context *gin.Context) {
 				controllers.GetAll[laboratorios2.Laboratorios](context, &obj)
 			})
 			lab.PATCH("/:id", func(context *gin.Context) {
-				uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-				controllers.Modify[laboratorios2.Laboratorios](context, &obj, uint64(uid))
+				uid, _ := uuid.Parse(context.Param("id"))
+				controllers.Modify[laboratorios2.Laboratorios](context, &obj, uid)
 			})
 			lab.DELETE("/:id", func(context *gin.Context) {
-				uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-				controllers.Erase[laboratorios2.Laboratorios](context, &obj, uint64(uid))
+				uid, _ := uuid.Parse(context.Param("id"))
+				controllers.Erase[laboratorios2.Laboratorios](context, &obj, uid)
 			})
 		}
 		res := main.Group("reservas")
@@ -108,20 +110,20 @@ func ConfigRoutes(router *gin.Engine) *gin.Engine {
 				controllers.Add[laboratorios2.Reservas](context, &obj)
 			})
 			res.GET("/:id", func(context *gin.Context) {
-				uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-				controllers.Get[laboratorios2.Reservas](context, &obj, uint64(uid))
+				uid, _ := uuid.Parse(context.Param("id"))
+				controllers.Get[laboratorios2.Reservas](context, &obj, uid)
 			})
 
 			res.GET("/", func(context *gin.Context) {
 				controllers.GetAll[laboratorios2.Reservas](context, &obj)
 			})
 			res.PATCH("/:id", func(context *gin.Context) {
-				uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-				controllers.Modify[laboratorios2.Reservas](context, &obj, uint64(uid))
+				uid, _ := uuid.Parse(context.Param("id"))
+				controllers.Modify[laboratorios2.Reservas](context, &obj, uid)
 			})
 			res.DELETE("/:id", func(context *gin.Context) {
-				uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-				controllers.Erase[laboratorios2.Reservas](context, &obj, uint64(uid))
+				uid, _ := uuid.Parse(context.Param("id"))
+				controllers.Erase[laboratorios2.Reservas](context, &obj, uid)
 			})
 		}
 		ges := main.Group("gestao")
@@ -131,20 +133,20 @@ func ConfigRoutes(router *gin.Engine) *gin.Engine {
 				controllers.Add[laboratorios2.GestaoMateriais](context, &obj)
 			})
 			ges.GET("/:id", func(context *gin.Context) {
-				uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-				controllers.Get[laboratorios2.GestaoMateriais](context, &obj, uint64(uid))
+				uid, _ := uuid.Parse(context.Param("id"))
+				controllers.Get[laboratorios2.GestaoMateriais](context, &obj, uid)
 			})
 
 			ges.GET("/", func(context *gin.Context) {
 				controllers.GetAll[laboratorios2.GestaoMateriais](context, &obj)
 			})
 			ges.PATCH("/:id", func(context *gin.Context) {
-				uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-				controllers.Modify[laboratorios2.GestaoMateriais](context, &obj, uint64(uid))
+				uid, _ := uuid.Parse(context.Param("id"))
+				controllers.Modify[laboratorios2.GestaoMateriais](context, &obj, uid)
 			})
 			ges.DELETE("/:id", func(context *gin.Context) {
-				uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-				controllers.Erase[laboratorios2.GestaoMateriais](context, &obj, uint64(uid))
+				uid, _ := uuid.Parse(context.Param("id"))
+				controllers.Erase[laboratorios2.GestaoMateriais](context, &obj, uid)
 			})
 		}
 		/*
@@ -158,16 +160,16 @@ func ConfigRoutes(router *gin.Engine) *gin.Engine {
 					controllers.GetAll[models.Instituicao](context, &obj)
 				})
 				inst.GET("/:id", func(context *gin.Context) {
-					uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-					controllers.Get[models.Instituicao](context, &obj, uint64(uid))
+					uid, _ := uuid.Parse(context.Param("id"))
+					controllers.Get[models.Instituicao](context, &obj, uuid)
 				})
 				inst.PATCH("/:id", func(context *gin.Context) {
-					uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-					controllers.Modify[models.Instituicao](context, &obj, uint64(uid))
+					uid, _ := uuid.Parse(context.Param("id"))
+					controllers.Modify[models.Instituicao](context, &obj, uuid)
 				})
 				inst.DELETE("/:id", func(context *gin.Context) {
-					uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-					controllers.Erase[models.Instituicao](context, &obj, uint64(uid))
+					uid, _ := uuid.Parse(context.Param("id"))
+					controllers.Erase[models.Instituicao](context, &obj, uuid)
 				})
 			}
 			event := main.Group("evento")
@@ -180,16 +182,16 @@ func ConfigRoutes(router *gin.Engine) *gin.Engine {
 					controllers.GetAll[models.Evento](context, &obj)
 				})
 				event.GET("/:id", func(context *gin.Context) {
-					uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-					controllers.Get[models.Evento](context, &obj, uint64(uid))
+					uid, _ := uuid.Parse(context.Param("id"))
+					controllers.Get[models.Evento](context, &obj, uuid)
 				})
 				event.PATCH("/:id", func(context *gin.Context) {
-					uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-					controllers.Modify[models.Evento](context, &obj, uint64(uid))
+					uid, _ := uuid.Parse(context.Param("id"))
+					controllers.Modify[models.Evento](context, &obj, uuid)
 				})
 				event.DELETE("/:id", func(context *gin.Context) {
-					uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-					controllers.Erase[models.Evento](context, &obj, uint64(uid))
+					uid, _ := uuid.Parse(context.Param("id"))
+					controllers.Erase[models.Evento](context, &obj, uuid)
 				})
 			}
 			cert := main.Group("cert")
@@ -202,16 +204,16 @@ func ConfigRoutes(router *gin.Engine) *gin.Engine {
 					controllers.GetAll[models.Certificado](context, &obj)
 				})
 				cert.GET("/:id", func(context *gin.Context) {
-					uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-					controllers.Get[models.Certificado](context, &obj, uint64(uid))
+					uid, _ := uuid.Parse(context.Param("id"))
+					controllers.Get[models.Certificado](context, &obj, uuid)
 				})
 				cert.PATCH("/:id", func(context *gin.Context) {
-					uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-					controllers.Modify[models.Certificado](context, &obj, uint64(uid))
+					uid, _ := uuid.Parse(context.Param("id"))
+					controllers.Modify[models.Certificado](context, &obj, uuid)
 				})
 				cert.DELETE("/:id", func(context *gin.Context) {
-					uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-					controllers.Erase[models.Certificado](context, &obj, uint64(uid))
+					uid, _ := uuid.Parse(context.Param("id"))
+					controllers.Erase[models.Certificado](context, &obj, uuid)
 				})
 			}
 			certval := main.Group("valida")
@@ -224,16 +226,16 @@ func ConfigRoutes(router *gin.Engine) *gin.Engine {
 					controllers.GetAll[models.CertVal](context, &obj)
 				})
 				certval.GET("/:id", func(context *gin.Context) {
-					uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-					controllers.Get[models.CertVal](context, &obj, uint64(uid))
+					uid, _ := uuid.Parse(context.Param("id"))
+					controllers.Get[models.CertVal](context, &obj, uuid)
 				})
 				certval.PATCH("/", func(context *gin.Context) {
-					uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-					controllers.Modify[models.CertVal](context, &obj, uint64(uid))
+					uid, _ := uuid.Parse(context.Param("id"))
+					controllers.Modify[models.CertVal](context, &obj, uuid)
 				})
 				certval.DELETE("/:id", func(context *gin.Context) {
-					uid, _ := strconv.ParseInt(context.Param("id"), 10, 64)
-					controllers.Erase[models.CertVal](context, &obj, uint64(uid))
+					uid, _ := uuid.Parse(context.Param("id"))
+					controllers.Erase[models.CertVal](context, &obj, uuid)
 				})
 			}
 		*/

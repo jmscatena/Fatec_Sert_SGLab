@@ -2,31 +2,30 @@ package services
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"log"
 
 	"github.com/jmscatena/Fatec_Sert_SGLab/database"
-	"github.com/jmscatena/Fatec_Sert_SGLab/utils"
+	"github.com/jmscatena/Fatec_Sert_SGLab/handlers"
 )
 
-func New[T utils.Tables](o utils.PersistenceHandler[T]) (int64, error) {
+func New[T handlers.Tables](o handlers.PersistenceHandler[T]) (uuid.UUID, error) {
+	/* metodo com devolucao do UUID */
 	db, err := database.Init()
 	if err != nil {
 		log.Fatalln(err)
-		return -1, err
+		return uuid.Nil, err
 	}
 	recid, err := o.Create(db)
 	fmt.Println("services:", err)
 	if err != nil {
-		//log.Fatalln(err)
-		return 0, err
+		log.Fatalln(err)
+		return uuid.Nil, err
 	}
-	if recid != 0 {
-		return recid, nil
-	}
-	return 0, nil
+	return recid, nil
 }
 
-func Update[T utils.Tables](o utils.PersistenceHandler[T], uid uint64) (*T, error) {
+func Update[T handlers.Tables](o handlers.PersistenceHandler[T], uid uuid.UUID) (*T, error) {
 	db, err := database.Init()
 	if err != nil {
 		log.Fatalln(err)
@@ -40,7 +39,7 @@ func Update[T utils.Tables](o utils.PersistenceHandler[T], uid uint64) (*T, erro
 	return rec, nil
 }
 
-func Del[T utils.Tables](o utils.PersistenceHandler[T], uid uint64) (int64, error) {
+func Del[T handlers.Tables](o handlers.PersistenceHandler[T], uid uuid.UUID) (int64, error) {
 	db, err := database.Init()
 	if err != nil {
 		log.Fatalln(err)
@@ -54,7 +53,7 @@ func Del[T utils.Tables](o utils.PersistenceHandler[T], uid uint64) (int64, erro
 	return rec, nil
 }
 
-func Get[T utils.Tables](o utils.PersistenceHandler[T], uid uint64) (*T, error) {
+func Get[T handlers.Tables](o handlers.PersistenceHandler[T], uid uuid.UUID) (*T, error) {
 	db, err := database.Init()
 	if err != nil {
 		log.Fatalln(err)
@@ -68,7 +67,7 @@ func Get[T utils.Tables](o utils.PersistenceHandler[T], uid uint64) (*T, error) 
 	return rec, nil
 }
 
-func GetAll[T utils.Tables](o utils.PersistenceHandler[T]) (*[]T, error) {
+func GetAll[T handlers.Tables](o handlers.PersistenceHandler[T]) (*[]T, error) {
 	db, err := database.Init()
 	if err != nil {
 		log.Fatalln(err)
@@ -82,8 +81,8 @@ func GetAll[T utils.Tables](o utils.PersistenceHandler[T]) (*[]T, error) {
 	}
 	return rec, nil
 }
+func GetBy[T handlers.Tables](o handlers.PersistenceHandler[T], param string, uid interface{}) (*[]T, error) {
 
-func GetBy[T utils.Tables](o utils.PersistenceHandler[T], param string, uid interface{}) (*[]T, error) {
 	db, err := database.Init()
 	if err != nil {
 		log.Fatalln(err)

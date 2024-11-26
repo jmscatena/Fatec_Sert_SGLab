@@ -21,19 +21,19 @@ type Usuario struct {
 	Perfil bool      `gorm:"default:False;"`
 }
 
-func (u *Usuario) Create(db *gorm.DB) (int64, error) {
+func (u *Usuario) Create(db *gorm.DB) (uuid.UUID, error) {
 	if verr := u.Validate("insert"); verr != nil {
-		return -2, verr
+		return uuid.Nil, verr
 	}
 	u.Prepare()
 	err := db.Debug().Omit("ID").Create(&u).Error
 	if err != nil {
-		return 0, err
+		return uuid.Nil, err
 	}
-	return int64(u.ID), nil
+	return u.UID, nil
 }
 
-func (u *Usuario) Update(db *gorm.DB, uid uint64) (*Usuario, error) {
+func (u *Usuario) Update(db *gorm.DB, uid uuid.UUID) (*Usuario, error) {
 
 	if verr := u.Validate("insert"); verr != nil {
 		return nil, verr
@@ -71,7 +71,7 @@ func (u *Usuario) List(db *gorm.DB) (*[]Usuario, error) {
 	return &Usuarios, err
 }
 
-func (u *Usuario) Find(db *gorm.DB, uid uint64) (*Usuario, error) {
+func (u *Usuario) Find(db *gorm.DB, uid uuid.UUID) (*Usuario, error) {
 	err := db.Debug().Model(Usuario{}).Where("id = ?", uid).Take(&u).Error
 	if err != nil {
 		return &Usuario{}, err
@@ -96,7 +96,7 @@ func (u *Usuario) FindBy(db *gorm.DB, param string, uid ...interface{}) (*[]Usua
 	return &Usuarios, nil
 }
 
-func (u *Usuario) Delete(db *gorm.DB, uid uint64) (int64, error) {
+func (u *Usuario) Delete(db *gorm.DB, uid uuid.UUID) (int64, error) {
 	db = db.Debug().Where("id = ?", uid).Delete(&Usuario{})
 	if db.Error != nil {
 		return 0, db.Error
@@ -162,7 +162,7 @@ func Hash(Senha string) []byte {
 	return hash
 }
 
-func VerifySenha(hashedSenha, Senha string) error {
+func VerifyPassword(hashedSenha string, Senha string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedSenha), []byte(Senha))
 }
 

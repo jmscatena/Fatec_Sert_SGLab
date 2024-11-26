@@ -17,7 +17,7 @@ func main() {
 	}
 	gin.SetMode(os.Getenv("SET_MODE"))
 	_, _ = database.Init()
-	_ = database.InitDF()
+	_, _ = database.InitDF()
 	r := config.NewServer("8000")
 	r.Run()
 }

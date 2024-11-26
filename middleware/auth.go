@@ -1,40 +1,43 @@
 package middleware
 
 import (
+	gin "github.com/gin-gonic/gin"
 	"github.com/jmscatena/Fatec_Sert_SGLab/services"
 	"net/http"
 	"strings"
 )
 
-func Auth(next http.Handler, tokenService services.token_services) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func Auth() gin.HandlerFunc {
+	return func(c *gin.Context) {
 		// Extract the JWT token from the Authorization header
-		authHeader := r.Header.Get("Authorization")
+		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			http.Error(w, "Authorization header is missing", http.StatusUnauthorized)
+			c.String(http.StatusUnauthorized, "Authorization header is missing")
+			c.Abort()
 			return
 		}
 
 		// Split the header value into "Bearer " and the token
 		tokenParts := strings.Split(authHeader, " ")
 		if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
-			http.Error(w, "Invalid authorization header format", http.StatusUnauthorized)
+			c.String(http.StatusUnauthorized, "Invalid authorization header format")
+			c.Abort()
 			return
 		}
 
 		// Verify the JWT token
 		tokenString := tokenParts[1]
-		userId, err := tokenService.VerifyToken(tokenString)
+		userId, err := services.VerifyToken(tokenString, "refresh")
 		if err != nil {
-			http.Error(w, "Invalid or expired token", http.StatusUnauthorized)
+			c.String(http.StatusUnauthorized, "Invalid or expired token")
+			c.Abort()
 			return
 		}
 
 		// Store the user ID in the request context
-		ctx := context.WithValue(r.Context(), "userId", userId)
-		r = r.WithContext(ctx)
+		c.Set("userId", userId)
 
 		// Proceed to the next handler
-		next.ServeHTTP(w, r)
-	})
+		c.Next()
+	}
 }

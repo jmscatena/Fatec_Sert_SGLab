@@ -2,6 +2,7 @@ package laboratorios
 
 import (
 	"errors"
+	"github.com/google/uuid"
 	"github.com/jmscatena/Fatec_Sert_SGLab/database/models/administrativo"
 	"gorm.io/gorm"
 	"html"
@@ -12,16 +13,16 @@ import (
 
 type Laboratorios struct {
 	gorm.Model
-	ID                  uint64                 `gorm:"primary_key;auto_increment" json:"ID"`
+	UID                 uuid.UUID              `gorm:"primary_key;type:uuid;default:uuid_generate_v4()" json:"ID"`
 	Titulo              string                 `gorm:"not null" json:"titulo"`
 	Descricao           string                 `json:"descricao"`
 	Quantidade          int16                  `gorm:"not null; default=20" json:"quantidade"`
 	ComputadorProfessor bool                   `gorm:"default=true" json:"pc_professor"`
 	Rotativo            bool                   `gorm:"default=false" json:"rotativo"`
 	CreateUserID        int                    `json:"createuserid"`
-	CreatedBy           administrativo.Usuario `gorm:"foreignKey:CreateUserID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"createdby"`
+	CreatedBy           administrativo.Usuario `gorm:"foreignKey:CreateUserID;references:UID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"createdby"`
 	UpdateUserID        int                    `gorm:"default=0" json:"updateuserid"`
-	UpdatedBy           administrativo.Usuario `gorm:"foreignKey:UpdateUserID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"updatedby"`
+	UpdatedBy           administrativo.Usuario `gorm:"foreignKey:UpdateUserID;references:UID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"updatedby"`
 	Materiais           []Materiais            `gorm:"many2many:laboratorio_materiais" json:"materiais"`
 }
 
@@ -59,19 +60,19 @@ func (p *Laboratorios) Prepare(db *gorm.DB) (err error) {
 	return
 }
 
-func (p *Laboratorios) Create(db *gorm.DB) (int64, error) {
+func (p *Laboratorios) Create(db *gorm.DB) (uuid.UUID, error) {
 	if verr := p.Validate(); verr != nil {
-		return -1, verr
+		return uuid.Nil, verr
 	}
 	p.Prepare(db)
 	err := db.Debug().Omit("ID").Create(&p).Error
 	if err != nil {
-		return 0, err
+		return uuid.Nil, err
 	}
-	return int64(p.ID), nil
+	return p.UID, nil
 }
 
-func (p *Laboratorios) Update(db *gorm.DB, uid uint64) (*Laboratorios, error) {
+func (p *Laboratorios) Update(db *gorm.DB, uid uuid.UUID) (*Laboratorios, error) {
 	p.Prepare(db)
 	//err := db.Debug().Model(&Laboratorios{}).Where("id = ?", uid).Take(&Laboratorios{}).UpdateColumns(
 	//	map[string]interface{}
@@ -101,7 +102,7 @@ func (p *Laboratorios) List(db *gorm.DB) (*[]Laboratorios, error) {
 	return &Laboratorioss, nil
 }
 
-func (p *Laboratorios) Find(db *gorm.DB, uid uint64) (*Laboratorios, error) {
+func (p *Laboratorios) Find(db *gorm.DB, uid uuid.UUID) (*Laboratorios, error) {
 	err := db.Debug().Model(&Laboratorios{}).Preload("CreatedBy").Preload("UpdatedBy").Preload("Materiais").Where("id = ?", uid).Take(&p).Error
 	if err != nil {
 		return &Laboratorios{}, err
@@ -127,7 +128,7 @@ func (p *Laboratorios) FindBy(db *gorm.DB, param string, uid ...interface{}) (*[
 	return &Laboratorioss, nil
 }
 
-func (p *Laboratorios) Delete(db *gorm.DB, uid uint64) (int64, error) {
+func (p *Laboratorios) Delete(db *gorm.DB, uid uuid.UUID) (int64, error) {
 	db = db.Delete(&Laboratorios{}, "id = ? ", uid)
 	if db.Error != nil {
 		return 0, db.Error

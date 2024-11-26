@@ -39,7 +39,7 @@ func Init() (*gorm.DB, error) {
 	return db, err
 }
 
-func InitDF() error {
+func InitDF() (*redis.Client, error) {
 	var client *redis.Client
 	dsn := os.Getenv("REDIS_DSN")
 	if len(dsn) == 0 {
@@ -52,5 +52,5 @@ func InitDF() error {
 	if err != nil {
 		log.Fatalln("Erro no carregamento do Redis:", err)
 	}
-	return nil
+	return client, nil
 }

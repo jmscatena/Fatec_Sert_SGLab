@@ -2,6 +2,7 @@ package laboratorios
 
 import (
 	"errors"
+	"github.com/google/uuid"
 	"github.com/jmscatena/Fatec_Sert_SGLab/database/models/administrativo"
 	"gorm.io/gorm"
 	"html"
@@ -12,9 +13,9 @@ import (
 
 type Reservas struct {
 	gorm.Model
-	ID            uint64                 `gorm:"primary_key;auto_increment" json:"ID"`
+	UID           uuid.UUID              `gorm:"primary_key;type:uuid;default:uuid_generate_v4()" json:"ID"`
 	LaboratorioID uint64                 `gorm:"default:0" json:"labid"`
-	Laboratorio   Laboratorios           `gorm:"foreignKey: LaboratorioID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"laboratorio"`
+	Laboratorio   Laboratorios           `gorm:"foreignKey: LaboratorioID;references:UID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"laboratorio"`
 	DataInicial   time.Time              `gorm:"type:DATE;default:CURRENT_TIMESTAMP" json:"data_inicio"`
 	DataFinal     time.Time              `gorm:"type:DATE;default:CURRENT_TIMESTAMP" json:"data_fim"`
 	HoraInicial   time.Time              `gorm:"type:TIME;default:CURRENT_TIMESTAMP" json:"hora_inicio"`
@@ -23,10 +24,10 @@ type Reservas struct {
 	Rotativo      bool                   `gorm:"default:false" json:"rotativo"`
 	Autorizado    bool                   `gorm:"default:false" json:"autorizado"`
 	AutorizadoID  *uint64                `gorm:"default:null" json:"autorizadoid"`
-	AutorizadoBy  administrativo.Usuario `gorm:"foreignKey: AutorizadoID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"autorizado_por"`
+	AutorizadoBy  administrativo.Usuario `gorm:"foreignKey: AutorizadoID;references:UID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"autorizado_por"`
 	AutorizadoAt  time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"autorizado_em"`
 	SolicitadoID  uint64                 `gorm:"default:0" json:"solicitadoid"`
-	SolicitadoBy  administrativo.Usuario `gorm:"foreignKey: SolicitadoID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"solicitado_por"`
+	SolicitadoBy  administrativo.Usuario `gorm:"foreignKey: SolicitadoID;references:UID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"solicitado_por"`
 	SolicitadoAt  time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"solicitado_em"`
 	Ativa         bool                   `gorm:"default:false" json:"ativa"`
 }
@@ -87,19 +88,19 @@ func (p *Reservas) Prepare(db *gorm.DB) (err error) {
 	return
 }
 
-func (p *Reservas) Create(db *gorm.DB) (int64, error) {
+func (p *Reservas) Create(db *gorm.DB) (uuid.UUID, error) {
 	if verr := p.Validate(); verr != nil {
-		return -1, verr
+		return uuid.Nil, verr
 	}
 	p.Prepare(db)
 	err := db.Debug().Omit("ID").Create(&p).Error
 	if err != nil {
-		return 0, err
+		return uuid.Nil, err
 	}
-	return int64(p.ID), nil
+	return p.UID, nil
 }
 
-func (p *Reservas) Update(db *gorm.DB, uid uint64) (*Reservas, error) {
+func (p *Reservas) Update(db *gorm.DB, uid uuid.UUID) (*Reservas, error) {
 	db = db.Debug().Model(Reservas{}).Where("id = ?", uid).Updates(Reservas{
 		Laboratorio:  p.Laboratorio,
 		DataInicial:  p.DataInicial,
@@ -133,7 +134,7 @@ func (p *Reservas) List(db *gorm.DB) (*[]Reservas, error) {
 	return &Reservass, nil
 }
 
-func (p *Reservas) Find(db *gorm.DB, uid uint64) (*Reservas, error) {
+func (p *Reservas) Find(db *gorm.DB, uid uuid.UUID) (*Reservas, error) {
 	err := db.Debug().Model(&Reservas{}).
 		Preload("Laboratorio").
 		Preload("AutorizadoBy").
@@ -163,7 +164,7 @@ func (p *Reservas) FindBy(db *gorm.DB, param string, uid ...interface{}) (*[]Res
 	return &Reservass, nil
 }
 
-func (p *Reservas) Delete(db *gorm.DB, uid uint64) (int64, error) {
+func (p *Reservas) Delete(db *gorm.DB, uid uuid.UUID) (int64, error) {
 	db = db.Delete(&Reservas{}, "id = ? ", uid)
 	if db.Error != nil {
 		return 0, db.Error
@@ -171,7 +172,7 @@ func (p *Reservas) Delete(db *gorm.DB, uid uint64) (int64, error) {
 	return db.RowsAffected, nil
 }
 
-func (p *Reservas) DeleteBy(db *gorm.DB, cond string, uid uint64) (int64, error) {
+func (p *Reservas) DeleteBy(db *gorm.DB, cond string, uid uuid.UUID) (int64, error) {
 	result := db.Delete(&Reservas{}, cond+" = ?", uid)
 	if result.Error != nil {
 		return 0, result.Error
