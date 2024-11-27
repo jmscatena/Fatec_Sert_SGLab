@@ -55,49 +55,58 @@ func Signup() gin.HandlerFunc {
 
 		if err := c.BindJSON(&user); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.Abort()
 			return
 		}
 
 		validationErr := validate.Struct(user)
 		if validationErr != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": validationErr.Error()})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid authorization header format"})
+			c.Abort()
 			return
 		}
 		foundUser, err := GetBy[administrativo.Usuario](&user, "email=?", user.Email)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": validationErr.Error()})
+			c.Abort()
 			return
 		}
 		if foundUser != nil {
 			c.JSON(http.StatusConflict, gin.H{"error": "User Registred"})
+			c.Abort()
 			return
 		}
 
 		userID, err := New[administrativo.Usuario](&user)
 		user.UID = userID
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid authorization header format"})
+			c.Abort()
 			return
 		}
 		token, err := CreateToken(user, 1440, "token")
 		if err != nil {
 			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+			c.Abort()
 			return
 		}
 		err = StoreToken(token, userID.String())
 		if err != nil {
 			c.JSON(http.StatusForbidden, gin.H{"error": "Could Not Signup."})
+			c.Abort()
 			return
 
 		}
 		c.JSON(http.StatusOK, gin.H{"data": userID, "token": token})
 		//defer cancel()
+		c.Next()
 	}
 
 }
 func Login() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		//var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "entrou"})
 		var user administrativo.Usuario
 		if err := c.BindJSON(&user); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -108,12 +117,14 @@ func Login() gin.HandlerFunc {
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "email or password is incorrect"})
+			c.Abort()
 			return
 		}
 		foundUser := (*foundUsers)[0]
 		passwordIsValid := administrativo.VerifyPassword(foundUser.Senha, user.Senha)
 		if passwordIsValid != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": passwordIsValid})
+			c.Abort()
 			return
 		}
 
@@ -160,12 +171,14 @@ func Authenticate() gin.HandlerFunc {
 		userID := c.Request.Header.Get("ID")
 		if authHeader == "" || userID == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid authorization header format"})
+			c.Abort()
 			return
 		}
 		// Split the header value into "Bearer " and the token
 		tokenParts := strings.Split(authHeader, " ")
 		if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid authorization header format"})
+			c.Abort()
 			return
 		}
 		// Verify the JWT token
@@ -173,6 +186,7 @@ func Authenticate() gin.HandlerFunc {
 		_, err := VerifyToken(tokenString, userID)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token"})
+			c.Abort()
 			return
 		}
 		condition := "UID=?"

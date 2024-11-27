@@ -16,9 +16,8 @@ func ConfigRoutes(router *gin.Engine) *gin.Engine {
 		{
 
 		}*/
-		userRoute := main.Group("user")
+		userRoute := main.Group("user", services.Authenticate())
 		{
-
 			var user administrativo.Usuario
 			userRoute.POST("/", func(context *gin.Context) {
 				middleware.Add[administrativo.Usuario](context, &user)
@@ -47,7 +46,7 @@ func ConfigRoutes(router *gin.Engine) *gin.Engine {
 			})
 
 		}
-		userRoute.Use(services.Authenticate())
+
 		matRoute := main.Group("materiais")
 		{
 			var mat laboratorios2.Materiais
