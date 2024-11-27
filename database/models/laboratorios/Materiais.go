@@ -30,7 +30,6 @@ func (p *Materiais) Validate() error {
 	}
 	return nil
 }
-
 func (p *Materiais) Prepare() {
 	p.Titulo = html.EscapeString(strings.TrimSpace(p.Titulo))
 	p.Medida = html.EscapeString(strings.TrimSpace(p.Medida))
@@ -54,7 +53,6 @@ func (p *Materiais) Create(db *gorm.DB) (uuid.UUID, error) {
 	}
 	return p.UID, nil
 }
-
 func (p *Materiais) Update(db *gorm.DB, uid uuid.UUID) (*Materiais, error) {
 	db = db.Debug().Model(&Materiais{}).Where("id = ?", uid).Updates(Materiais{
 		Titulo:     p.Titulo,
@@ -65,7 +63,6 @@ func (p *Materiais) Update(db *gorm.DB, uid uuid.UUID) (*Materiais, error) {
 	}
 	return p, nil
 }
-
 func (p *Materiais) List(db *gorm.DB) (*[]Materiais, error) {
 	Materiaiss := []Materiais{}
 	err := db.Debug().Model(&Materiais{}).Limit(100).Find(&Materiaiss).Error
@@ -75,7 +72,6 @@ func (p *Materiais) List(db *gorm.DB) (*[]Materiais, error) {
 	}
 	return &Materiaiss, nil
 }
-
 func (p *Materiais) Find(db *gorm.DB, uid uuid.UUID) (*Materiais, error) {
 	err := db.Debug().Model(&Materiais{}).Where("id = ?", uid).Take(&p).Error
 	if err != nil {
@@ -83,7 +79,6 @@ func (p *Materiais) Find(db *gorm.DB, uid uuid.UUID) (*Materiais, error) {
 	}
 	return p, nil
 }
-
 func (p *Materiais) FindBy(db *gorm.DB, param string, uid ...interface{}) (*[]Materiais, error) {
 	Materiaiss := []Materiais{}
 	params := strings.Split(param, ";")
@@ -97,7 +92,6 @@ func (p *Materiais) FindBy(db *gorm.DB, param string, uid ...interface{}) (*[]Ma
 	}
 	return &Materiaiss, nil
 }
-
 func (p *Materiais) Delete(db *gorm.DB, uid uuid.UUID) (int64, error) {
 	db = db.Delete(&Materiais{}, "id = ? ", uid)
 	if db.Error != nil {
@@ -105,7 +99,6 @@ func (p *Materiais) Delete(db *gorm.DB, uid uuid.UUID) (int64, error) {
 	}
 	return db.RowsAffected, nil
 }
-
 func (p *Materiais) DeleteBy(db *gorm.DB, cond string, uid uuid.UUID) (int64, error) {
 	result := db.Delete(&Materiais{}, cond+" = ?", uid)
 	if result.Error != nil {

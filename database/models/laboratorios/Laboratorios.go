@@ -3,27 +3,21 @@ package laboratorios
 import (
 	"errors"
 	"github.com/google/uuid"
-	"github.com/jmscatena/Fatec_Sert_SGLab/database/models/administrativo"
 	"gorm.io/gorm"
 	"html"
-	"log"
 	"strings"
 	"time"
 )
 
 type Laboratorios struct {
 	gorm.Model
-	UID                 uuid.UUID              `gorm:"primary_key;type:uuid;default:uuid_generate_v4()" json:"ID"`
-	Titulo              string                 `gorm:"not null" json:"titulo"`
-	Descricao           string                 `json:"descricao"`
-	Quantidade          int16                  `gorm:"not null; default=20" json:"quantidade"`
-	ComputadorProfessor bool                   `gorm:"default=true" json:"pc_professor"`
-	Rotativo            bool                   `gorm:"default=false" json:"rotativo"`
-	CreateUserID        int                    `json:"createuserid"`
-	CreatedBy           administrativo.Usuario `gorm:"foreignKey:CreateUserID;references:UID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"createdby"`
-	UpdateUserID        int                    `gorm:"default=0" json:"updateuserid"`
-	UpdatedBy           administrativo.Usuario `gorm:"foreignKey:UpdateUserID;references:UID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"updatedby"`
-	Materiais           []Materiais            `gorm:"many2many:laboratorio_materiais" json:"materiais"`
+	UID                 uuid.UUID   `gorm:"type:uuid;default:uuid_generate_v4()" json:"ID"`
+	Titulo              string      `gorm:"not null" json:"titulo"`
+	Descricao           string      `json:"descricao"`
+	Quantidade          int16       `gorm:"not null; default=20" json:"quantidade"`
+	ComputadorProfessor bool        `gorm:"default=true" json:"pc_professor"`
+	Rotativo            bool        `gorm:"default=false" json:"rotativo"`
+	Materiais           []Materiais `gorm:"many2many:laboratorio_materiais" json:"materiais"`
 }
 
 func (p *Laboratorios) Validate() error {
@@ -44,19 +38,6 @@ func (p *Laboratorios) Prepare(db *gorm.DB) (err error) {
 	p.CreatedAt = time.Now()
 	p.UpdatedAt = time.Now()
 
-	usuario := administrativo.Usuario{}
-	if p.UpdateUserID == 0 {
-		err = db.Model(&administrativo.Usuario{}).Where("id = ?", p.CreateUserID).Take(&usuario).Error
-		p.CreatedBy = usuario
-		p.UpdatedBy = usuario
-	} else {
-		err = db.Model(&administrativo.Usuario{}).Where("id = ?", p.UpdateUserID).Take(&usuario).Error
-		p.UpdatedBy = usuario
-	}
-
-	if err != nil {
-		log.Fatalf("Error during preparation:%v", err)
-	}
 	return
 }
 
@@ -83,8 +64,7 @@ func (p *Laboratorios) Update(db *gorm.DB, uid uuid.UUID) (*Laboratorios, error)
 			Quantidade:          p.Quantidade,
 			ComputadorProfessor: p.ComputadorProfessor,
 			Rotativo:            p.Rotativo,
-			Materiais:           p.Materiais,
-			UpdatedBy:           p.UpdatedBy})
+			Materiais:           p.Materiais})
 	if db.Error != nil {
 		return &Laboratorios{}, db.Error
 	}

@@ -13,9 +13,9 @@ import (
 
 type Reservas struct {
 	gorm.Model
-	UID           uuid.UUID              `gorm:"primary_key;type:uuid;default:uuid_generate_v4()" json:"ID"`
+	UID           uuid.UUID              `gorm:"type:uuid;default:uuid_generate_v4()" json:"ID"`
 	LaboratorioID uint64                 `gorm:"default:0" json:"labid"`
-	Laboratorio   Laboratorios           `gorm:"foreignKey: LaboratorioID;references:UID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"laboratorio"`
+	Laboratorio   Laboratorios           `gorm:"foreignKey: LaboratorioID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"laboratorio"`
 	DataInicial   time.Time              `gorm:"type:DATE;default:CURRENT_TIMESTAMP" json:"data_inicio"`
 	DataFinal     time.Time              `gorm:"type:DATE;default:CURRENT_TIMESTAMP" json:"data_fim"`
 	HoraInicial   time.Time              `gorm:"type:TIME;default:CURRENT_TIMESTAMP" json:"hora_inicio"`
@@ -24,10 +24,10 @@ type Reservas struct {
 	Rotativo      bool                   `gorm:"default:false" json:"rotativo"`
 	Autorizado    bool                   `gorm:"default:false" json:"autorizado"`
 	AutorizadoID  *uint64                `gorm:"default:null" json:"autorizadoid"`
-	AutorizadoBy  administrativo.Usuario `gorm:"foreignKey: AutorizadoID;references:UID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"autorizado_por"`
+	AutorizadoBy  administrativo.Usuario `gorm:"foreignKey: AutorizadoID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"autorizado_por"`
 	AutorizadoAt  time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"autorizado_em"`
 	SolicitadoID  uint64                 `gorm:"default:0" json:"solicitadoid"`
-	SolicitadoBy  administrativo.Usuario `gorm:"foreignKey: SolicitadoID;references:UID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"solicitado_por"`
+	SolicitadoBy  administrativo.Usuario `gorm:"foreignKey: SolicitadoID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"solicitado_por"`
 	SolicitadoAt  time.Time              `gorm:"default:CURRENT_TIMESTAMP" json:"solicitado_em"`
 	Ativa         bool                   `gorm:"default:false" json:"ativa"`
 }

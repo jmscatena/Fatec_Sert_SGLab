@@ -13,7 +13,7 @@ import (
 
 type Usuario struct {
 	gorm.Model
-	UID    uuid.UUID `gorm:"primary_key;type:uuid;default:uuid_generate_v4()" json:"ID"`
+	UID    uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()" json:"UID"`
 	Nome   string    `gorm:"size:255;not null;unique" json:"nome"`
 	Email  string    `gorm:"size:100;not null,email;" json:"email"`
 	Senha  string    `gorm:"size:100;not null;" json:"-"`

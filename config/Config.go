@@ -1,10 +1,9 @@
 package config
 
 import (
-	"log"
-
 	"github.com/gin-gonic/gin"
 	"github.com/jmscatena/Fatec_Sert_SGLab/routes"
+	"log"
 )
 
 type Server struct {

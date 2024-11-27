@@ -12,9 +12,9 @@ import (
 type GestaoMateriais struct {
 	// Esta faltando os materiais
 	gorm.Model
-	UID        uuid.UUID              `gorm:"primary_key;type:uuid;default:uuid_generate_v4()" json:"ID"`
+	UID        uuid.UUID              `gorm:"type:uuid;default:uuid_generate_v4()" json:"ID"`
 	ReservaID  uint64                 `json:"-"`
-	Reserva    Reservas               `gorm:"references:UID" json:"reserva"`
+	Reserva    Reservas               `gorm:"references:ID" json:"reserva"`
 	Disponivel bool                   `gorm:"default:false" json:"disponivel"`
 	CompraEm   time.Time              `json:"compra_em"`
 	UsuarioID  uint64                 `json:"-"`
