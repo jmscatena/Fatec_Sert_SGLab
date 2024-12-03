@@ -32,12 +32,16 @@ func CreateToken(user administrativo.Usuario, expire int, keytype string) (strin
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(secretkey))
 }
-func StoreToken(key string, value string) error {
+func StoreToken(key string, value string, expire int) error {
 	redisClient, err := database.InitDF()
 	if err != nil {
 		return fmt.Errorf("Error Data storing token: %w", err)
 	}
-	err = redisClient.Set(key, value, time.Hour*24).Err()
+	value, err = redisClient.Get(key).Result()
+	if err != nil {
+		err = redisClient.Set(key, value, time.Minute*time.Duration(expire)).Err()
+	}
+	err = redisClient.Set(key, value, time.Minute*time.Duration(expire)).Err()
 	if err != nil {
 		return fmt.Errorf("Error storing token: %w", err)
 	}

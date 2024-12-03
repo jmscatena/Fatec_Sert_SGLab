@@ -90,7 +90,7 @@ func Signup() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		err = StoreToken(token, userID.String())
+		err = StoreToken(token, userID.String(), 1440)
 		if err != nil {
 			c.JSON(http.StatusForbidden, gin.H{"error": "Could Not Signup."})
 			c.Abort()
@@ -128,13 +128,13 @@ func Login() gin.HandlerFunc {
 		}
 
 		token, err := CreateToken(*foundUser, 1440, "token")
-		err = StoreToken(token, foundUser.UID.String())
+		err = StoreToken(token, foundUser.UID.String(), 1440)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 		refreshtoken, err := CreateToken(*foundUser, 10, "refresh")
-		err = StoreToken(foundUser.UID.String(), refreshtoken)
+		err = StoreToken(foundUser.UID.String(), refreshtoken, 10)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -195,8 +195,8 @@ func Authenticate() gin.HandlerFunc {
 
 		// Store the user ID in the request context
 		//c.JSON(http.StatusOK, gin.H{"data": foundUser.UID, "token": token})
-		c.Set("data", foundUser.UID)
-		c.Set("token", token)
+		c.Set("id", foundUser.UID)
+		c.Set("data", token)
 
 		// Proceed to the next handler
 		c.Next()
@@ -227,7 +227,7 @@ func ValidateSession(token string, user administrativo.Usuario) (string, error) 
 		if err != nil {
 			return "", fmt.Errorf("Error validate session: %w", err)
 		}
-		err = StoreToken(refreshtk, user.UID.String())
+		err = StoreToken(refreshtk, user.UID.String(), 10)
 		if err != nil {
 			return "", fmt.Errorf("Error validate session: %w", err)
 		}
