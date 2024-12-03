@@ -53,7 +53,7 @@ func Del[T handlers.Tables](o handlers.PersistenceHandler[T], uid uuid.UUID) (in
 	return rec, nil
 }
 
-func Get[T handlers.Tables](o handlers.PersistenceHandler[T], uid uuid.UUID) (*T, error) {
+/*func Get[T handlers.Tables](o handlers.PersistenceHandler[T], uid uuid.UUID) (*T, error) {
 	db, err := database.Init()
 	if err != nil {
 		log.Fatalln(err)
@@ -66,6 +66,7 @@ func Get[T handlers.Tables](o handlers.PersistenceHandler[T], uid uuid.UUID) (*T
 	}
 	return rec, nil
 }
+*/
 
 func GetAll[T handlers.Tables](o handlers.PersistenceHandler[T]) (*[]T, error) {
 	db, err := database.Init()
@@ -81,14 +82,13 @@ func GetAll[T handlers.Tables](o handlers.PersistenceHandler[T]) (*[]T, error) {
 	}
 	return rec, nil
 }
-func GetBy[T handlers.Tables](o handlers.PersistenceHandler[T], param string, uid interface{}) (*[]T, error) {
-
+func Get[T handlers.Tables](o handlers.PersistenceHandler[T], param string, values string) (*T, error) {
 	db, err := database.Init()
 	if err != nil {
 		log.Fatalln(err)
 		return nil, err
 	}
-	rec, err := o.FindBy(db, param, uid)
+	rec, err := o.Find(db, param, values)
 	if err != nil {
 		//log.Fatalln(err)
 		return nil, err

@@ -68,23 +68,24 @@ func Erase[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], 
 	}
 }
 
-func Get[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], uid uuid.UUID) {
-	if reflect.TypeOf(o) != nil {
-		if uid == uuid.Nil {
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusText(http.StatusBadRequest), "data": "{}"})
-			return
-		}
-		var handler handlers.PersistenceHandler[T] = o
-		rec, cerr := services.Get(handler, uid)
+/*
+	func Get[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], uid uuid.UUID) {
+		if reflect.TypeOf(o) != nil {
+			if uid == uuid.Nil {
+				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusText(http.StatusBadRequest), "data": "{}"})
+				return
+			}
+			var handler handlers.PersistenceHandler[T] = o
+			rec, cerr := services.Get(handler, uid)
 
-		if cerr != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusText(http.StatusBadRequest), "data": cerr})
-			return
+			if cerr != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusText(http.StatusBadRequest), "data": cerr})
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{"data": rec, "status": http.StatusText(http.StatusOK)})
 		}
-		c.JSON(http.StatusOK, gin.H{"data": rec, "status": http.StatusText(http.StatusOK)})
 	}
-}
-
+*/
 func GetAll[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T]) {
 	if reflect.TypeOf(o) != nil {
 		var handler handlers.PersistenceHandler[T] = o
@@ -97,13 +98,13 @@ func GetAll[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T])
 	}
 }
 
-func GetBy[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], param string, uid ...interface{}) {
+func Get[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], param string, values string) {
 	if reflect.TypeOf(o) != nil {
-		if len(uid) == 0 {
+		if len(values) == 0 {
 			c.JSON(http.StatusNotFound, gin.H{"status": http.StatusText(http.StatusNotFound), "data": "No Data"})
 		}
 		var handler handlers.PersistenceHandler[T] = o
-		rec, cerr := services.GetBy(handler, param, uid)
+		rec, cerr := services.Get(handler, param, values)
 
 		if cerr != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusText(http.StatusBadRequest), "data": cerr})

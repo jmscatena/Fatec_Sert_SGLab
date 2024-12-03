@@ -25,12 +25,12 @@ func CreateToken(user administrativo.Usuario, expire int, keytype string) (strin
 	}
 
 	claims := jwt.MapClaims{}
-	claims["uuid"] = user.UID
+	claims["uuid"] = user.UID.String()
 	claims["name"] = user.Nome
 	claims["exp"] = time.Now().Add(time.Duration(expire) * time.Minute).Unix() // Token valid for 1 hour
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(secretkey)
+	return token.SignedString([]byte(secretkey))
 }
 func StoreToken(key string, value string) error {
 	redisClient, err := database.InitDF()

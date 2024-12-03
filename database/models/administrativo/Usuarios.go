@@ -16,7 +16,7 @@ type Usuario struct {
 	UID    uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()" json:"UID"`
 	Nome   string    `gorm:"size:255;not null;unique" json:"nome"`
 	Email  string    `gorm:"size:100;not null,email;" json:"email"`
-	Senha  string    `gorm:"size:100;not null;" json:"-"`
+	Senha  string    `gorm:"size:100;not null;" json:"code"`
 	Ativo  bool      `gorm:"default:True;" json:"ativo"`
 	Perfil bool      `gorm:"default:False;"`
 }
@@ -71,7 +71,9 @@ func (u *Usuario) List(db *gorm.DB) (*[]Usuario, error) {
 	return &Usuarios, err
 }
 
+/*
 func (u *Usuario) Find(db *gorm.DB, uid uuid.UUID) (*Usuario, error) {
+
 	err := db.Debug().Model(Usuario{}).Where("id = ?", uid).Take(&u).Error
 	if err != nil {
 		return &Usuario{}, err
@@ -81,19 +83,17 @@ func (u *Usuario) Find(db *gorm.DB, uid uuid.UUID) (*Usuario, error) {
 	}
 	return u, err
 }
+*/
 
-func (u *Usuario) FindBy(db *gorm.DB, param string, uid ...interface{}) (*[]Usuario, error) {
-	Usuarios := []Usuario{}
-	params := strings.Split(param, ";")
-	uids := uid[0].([]interface{})
-	if len(params) != len(uids) {
-		return nil, errors.New("condição inválida")
+func (u *Usuario) Find(db *gorm.DB, param string, uid string) (*Usuario, error) {
+	err := db.Debug().Model(Usuario{}).Where(param, uid).Take(&u).Error
+	if err != nil {
+		return &Usuario{}, err
 	}
-	result := db.Where(strings.Join(params, " AND "), uids...).Find(&Usuarios)
-	if result.Error != nil {
-		return nil, result.Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return &Usuario{}, errors.New("Usuario Inexistente")
 	}
-	return &Usuarios, nil
+	return u, nil
 }
 
 func (u *Usuario) Delete(db *gorm.DB, uid uuid.UUID) (int64, error) {
@@ -162,8 +162,8 @@ func Hash(Senha string) []byte {
 	return hash
 }
 
-func VerifyPassword(hashedSenha string, Senha string) error {
-	return bcrypt.CompareHashAndPassword([]byte(hashedSenha), []byte(Senha))
+func VerifyPassword(hashedSenha string, senha string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hashedSenha), []byte(senha))
 }
 
 func (u *Usuario) Prepare() {
