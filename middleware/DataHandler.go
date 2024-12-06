@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/jmscatena/Fatec_Sert_SGLab/handlers"
+	"github.com/jmscatena/Fatec_Sert_SGLab/infra"
 	"github.com/jmscatena/Fatec_Sert_SGLab/services"
 	"net/http"
 	"reflect"
@@ -15,18 +16,15 @@ func Index(c *gin.Context) {
 
 }
 
-func Add[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T]) {
+func Add[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], conn infra.Connection) {
 	if reflect.TypeOf(o) != nil {
 		if err := c.ShouldBindJSON(&o); err != nil {
 			fmt.Println("ERRO:", err)
-			//msg para deploy
-			//c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusText(http.StatusBadRequest), "data": "Erro de JSON"})
-			//msg para dev
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusText(http.StatusBadRequest), "data": err})
 			return
 		}
 		var handler handlers.PersistenceHandler[T] = o
-		code, cerr := services.New(handler)
+		code, cerr := services.New(handler, conn)
 
 		if cerr != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusText(http.StatusConflict), "data": cerr})
@@ -35,7 +33,7 @@ func Add[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T]) {
 	}
 }
 
-func Modify[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], uid uuid.UUID) {
+func Modify[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], uid uuid.UUID, conn infra.Connection) {
 	if reflect.TypeOf(o) != nil {
 		if err := c.ShouldBindJSON(&o); err != nil {
 			fmt.Println("ERRO:", err)
@@ -47,7 +45,7 @@ func Modify[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T],
 
 		}
 		var handler handlers.PersistenceHandler[T] = o
-		code, cerr := services.Update(handler, uid)
+		code, cerr := services.Update(handler, uid, conn)
 
 		if cerr != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusText(http.StatusBadRequest), "data": cerr})

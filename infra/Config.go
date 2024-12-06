@@ -43,14 +43,14 @@ func (c *Connection) InitNoSQL() (*redis.Client, error) {
 	if len(dsn) == 0 {
 		dsn = "localhost:6379"
 	}
-	c.Redis = redis.NewClient(&redis.Options{
+	c.NoSql = redis.NewClient(&redis.Options{
 		Addr: dsn, //redis port
 	})
-	_, err := client.Ping().Result()
+	var _, err = client.Ping().Result()
 	if err != nil {
 		log.Fatalln("Erro no carregamento do Redis:", err)
 	}
-	return c.Redis, nil
+	return c.NoSql, nil
 }
 
 type Server struct {

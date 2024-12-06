@@ -40,7 +40,7 @@ func ConfigRoutes(router *gin.Engine, conn infra.Connection) *gin.Engine {
 
 			userRoute.PATCH("/:id", func(context *gin.Context) {
 				uid, _ := uuid.Parse(context.Param("id"))
-				middleware.Modify[administrativo.Usuario](context, &user, uid)
+				middleware.Modify[administrativo.Usuario](context, &user, uid, conn)
 			})
 			userRoute.DELETE("/:id", func(context *gin.Context) {
 				uid, _ := uuid.Parse(context.Param("id"))
@@ -54,7 +54,7 @@ func ConfigRoutes(router *gin.Engine, conn infra.Connection) *gin.Engine {
 	{
 		var mat laboratorios2.Materiais
 		matRoute.POST("/", func(context *gin.Context) {
-			middleware.Add[laboratorios2.Materiais](context, &mat)
+			middleware.Add[laboratorios2.Materiais](context, &mat, conn)
 		})
 		matRoute.GET("/:id", func(context *gin.Context) {
 			uid, _ := uuid.Parse(context.Param("id"))
@@ -67,7 +67,7 @@ func ConfigRoutes(router *gin.Engine, conn infra.Connection) *gin.Engine {
 		})
 		matRoute.PATCH("/:id", func(context *gin.Context) {
 			uid, _ := uuid.Parse(context.Param("id"))
-			middleware.Modify[laboratorios2.Materiais](context, &mat, uid)
+			middleware.Modify[laboratorios2.Materiais](context, &mat, uid, conn)
 		})
 		matRoute.DELETE("/:id", func(context *gin.Context) {
 			uid, _ := uuid.Parse(context.Param("id"))
@@ -87,7 +87,7 @@ func ConfigRoutes(router *gin.Engine, conn infra.Connection) *gin.Engine {
 	{
 		var obj laboratorios2.Laboratorios
 		lab.POST("/", func(context *gin.Context) {
-			middleware.Add[laboratorios2.Laboratorios](context, &obj)
+			middleware.Add[laboratorios2.Laboratorios](context, &obj, conn)
 		})
 		lab.GET("/:id", func(context *gin.Context) {
 			uid, _ := uuid.Parse(context.Param("id"))
@@ -100,7 +100,7 @@ func ConfigRoutes(router *gin.Engine, conn infra.Connection) *gin.Engine {
 		})
 		lab.PATCH("/:id", func(context *gin.Context) {
 			uid, _ := uuid.Parse(context.Param("id"))
-			middleware.Modify[laboratorios2.Laboratorios](context, &obj, uid)
+			middleware.Modify[laboratorios2.Laboratorios](context, &obj, uid, conn)
 		})
 		lab.DELETE("/:id", func(context *gin.Context) {
 			uid, _ := uuid.Parse(context.Param("id"))
@@ -111,7 +111,7 @@ func ConfigRoutes(router *gin.Engine, conn infra.Connection) *gin.Engine {
 	{
 		var obj laboratorios2.Reservas
 		res.POST("/", func(context *gin.Context) {
-			middleware.Add[laboratorios2.Reservas](context, &obj)
+			middleware.Add[laboratorios2.Reservas](context, &obj, conn)
 		})
 		res.GET("/:id", func(context *gin.Context) {
 			uid, _ := uuid.Parse(context.Param("id"))
@@ -124,7 +124,7 @@ func ConfigRoutes(router *gin.Engine, conn infra.Connection) *gin.Engine {
 		})
 		res.PATCH("/:id", func(context *gin.Context) {
 			uid, _ := uuid.Parse(context.Param("id"))
-			middleware.Modify[laboratorios2.Reservas](context, &obj, uid)
+			middleware.Modify[laboratorios2.Reservas](context, &obj, uid, conn)
 		})
 		res.DELETE("/:id", func(context *gin.Context) {
 			uid, _ := uuid.Parse(context.Param("id"))
@@ -135,7 +135,7 @@ func ConfigRoutes(router *gin.Engine, conn infra.Connection) *gin.Engine {
 	{
 		var obj laboratorios2.GestaoMateriais
 		ges.POST("/", func(context *gin.Context) {
-			middleware.Add[laboratorios2.GestaoMateriais](context, &obj)
+			middleware.Add[laboratorios2.GestaoMateriais](context, &obj, conn)
 		})
 		ges.GET("/:id", func(context *gin.Context) {
 			uid, _ := uuid.Parse(context.Param("id"))
@@ -148,7 +148,7 @@ func ConfigRoutes(router *gin.Engine, conn infra.Connection) *gin.Engine {
 		})
 		ges.PATCH("/:id", func(context *gin.Context) {
 			uid, _ := uuid.Parse(context.Param("id"))
-			middleware.Modify[laboratorios2.GestaoMateriais](context, &obj, uid)
+			middleware.Modify[laboratorios2.GestaoMateriais](context, &obj, uid, conn)
 		})
 		ges.DELETE("/:id", func(context *gin.Context) {
 			uid, _ := uuid.Parse(context.Param("id"))
