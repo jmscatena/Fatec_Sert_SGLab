@@ -54,10 +54,10 @@ func Modify[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T],
 	}
 }
 
-func Erase[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], uid uuid.UUID) {
+func Erase[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], uid uuid.UUID, conn infra.Connection) {
 	if reflect.TypeOf(o) != nil {
 		var handler handlers.PersistenceHandler[T] = o
-		code, cerr := services.Del(handler, uid)
+		code, cerr := services.Del(handler, uid, conn)
 
 		if cerr != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusText(http.StatusBadRequest), "data": cerr})
@@ -84,10 +84,10 @@ func Erase[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], 
 		}
 	}
 */
-func GetAll[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T]) {
+func GetAll[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], conn infra.Connection) {
 	if reflect.TypeOf(o) != nil {
 		var handler handlers.PersistenceHandler[T] = o
-		rec, cerr := services.GetAll(handler)
+		rec, cerr := services.GetAll(handler, conn)
 		if cerr != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusText(http.StatusBadRequest),
 				"data": cerr})
@@ -96,13 +96,13 @@ func GetAll[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T])
 	}
 }
 
-func Get[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], param string, values string) {
+func Get[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], param string, values string, conn infra.Connection) {
 	if reflect.TypeOf(o) != nil {
 		if len(values) == 0 {
 			c.JSON(http.StatusNotFound, gin.H{"status": http.StatusText(http.StatusNotFound), "data": "No Data"})
 		}
 		var handler handlers.PersistenceHandler[T] = o
-		rec, cerr := services.Get(handler, param, values)
+		rec, cerr := services.Get(handler, param, values, conn)
 
 		if cerr != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusText(http.StatusBadRequest), "data": cerr})
