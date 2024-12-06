@@ -38,7 +38,6 @@ func (c *Connection) InitDB() (*gorm.DB, error) {
 }
 
 func (c *Connection) InitNoSQL() (*redis.Client, error) {
-	var client *redis.Client
 	dsn := os.Getenv("REDIS_DSN")
 	if len(dsn) == 0 {
 		dsn = "localhost:6379"
@@ -46,7 +45,7 @@ func (c *Connection) InitNoSQL() (*redis.Client, error) {
 	c.NoSql = redis.NewClient(&redis.Options{
 		Addr: dsn, //redis port
 	})
-	var _, err = client.Ping().Result()
+	var _, err = c.NoSql.Ping().Result()
 	if err != nil {
 		log.Fatalln("Erro no carregamento do Redis:", err)
 	}
