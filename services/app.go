@@ -3,15 +3,15 @@ package services
 import (
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/jmscatena/Fatec_Sert_SGLab/config"
 	"log"
 
-	"github.com/jmscatena/Fatec_Sert_SGLab/database"
 	"github.com/jmscatena/Fatec_Sert_SGLab/handlers"
 )
 
 func New[T handlers.Tables](o handlers.PersistenceHandler[T]) (uuid.UUID, error) {
 	/* metodo com devolucao do UUID */
-	db, err := database.Init()
+	db, err := config.InitDB()
 	if err != nil {
 		log.Fatalln(err)
 		return uuid.Nil, err
@@ -26,7 +26,7 @@ func New[T handlers.Tables](o handlers.PersistenceHandler[T]) (uuid.UUID, error)
 }
 
 func Update[T handlers.Tables](o handlers.PersistenceHandler[T], uid uuid.UUID) (*T, error) {
-	db, err := database.Init()
+	db, err := config.InitDB()
 	if err != nil {
 		log.Fatalln(err)
 		return nil, err
@@ -40,7 +40,7 @@ func Update[T handlers.Tables](o handlers.PersistenceHandler[T], uid uuid.UUID) 
 }
 
 func Del[T handlers.Tables](o handlers.PersistenceHandler[T], uid uuid.UUID) (int64, error) {
-	db, err := database.Init()
+	db, err := config.InitDB()
 	if err != nil {
 		log.Fatalln(err)
 		return -1, err
@@ -69,7 +69,7 @@ func Del[T handlers.Tables](o handlers.PersistenceHandler[T], uid uuid.UUID) (in
 */
 
 func GetAll[T handlers.Tables](o handlers.PersistenceHandler[T]) (*[]T, error) {
-	db, err := database.Init()
+	db, err := config.database.Init()
 	if err != nil {
 		log.Fatalln(err)
 		return nil, err
@@ -83,7 +83,7 @@ func GetAll[T handlers.Tables](o handlers.PersistenceHandler[T]) (*[]T, error) {
 	return rec, nil
 }
 func Get[T handlers.Tables](o handlers.PersistenceHandler[T], param string, values string) (*T, error) {
-	db, err := database.Init()
+	db, err := config.database.Init()
 	if err != nil {
 		log.Fatalln(err)
 		return nil, err

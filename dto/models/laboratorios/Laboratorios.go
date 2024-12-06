@@ -81,33 +81,41 @@ func (p *Laboratorios) List(db *gorm.DB) (*[]Laboratorios, error) {
 	}
 	return &Laboratorioss, nil
 }
-
-func (p *Laboratorios) Find(db *gorm.DB, uid uuid.UUID) (*Laboratorios, error) {
-	err := db.Debug().Model(&Laboratorios{}).Preload("CreatedBy").Preload("UpdatedBy").Preload("Materiais").Where("id = ?", uid).Take(&p).Error
+func (u *Laboratorios) Find(db *gorm.DB, param string, uid string) (*Laboratorios, error) {
+	err := db.Debug().Model(Laboratorios{}).Where(param, uid).Take(&u).Error
 	if err != nil {
 		return &Laboratorios{}, err
 	}
-	return p, nil
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return &Laboratorios{}, errors.New("Laboratorio Inexistente")
+	}
+	return u, nil
 }
 
-func (p *Laboratorios) FindBy(db *gorm.DB, param string, uid ...interface{}) (*[]Laboratorios, error) {
-	/*
-		Metodo utilizado para pesquisas com outros campos
-	*/
-	Laboratorioss := []Laboratorios{}
-	params := strings.Split(param, ";")
-	uids := uid[0].([]interface{})
-	if len(params) != len(uids) {
-		return nil, errors.New("condição inválida")
+/*
+	func (p *Laboratorios) Find(db *gorm.DB, uid uuid.UUID) (*Laboratorios, error) {
+		err := db.Debug().Model(&Laboratorios{}).Preload("CreatedBy").Preload("UpdatedBy").Preload("Materiais").Where("id = ?", uid).Take(&p).Error
+		if err != nil {
+			return &Laboratorios{}, err
+		}
+		return p, nil
 	}
-	result := db.Model(&Laboratorios{}).Preload("CreatedBy").Preload("UpdatedBy").Preload("Materiais").Where(strings.Join(params, " AND "), uids...).Find(&Laboratorioss)
-	//result := db.Joins("CreatedBy", db.Where(strings.Join(params, " AND "), uids...)).Find(&Laboratorioss)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-	return &Laboratorioss, nil
-}
 
+	func (p *Laboratorios) FindBy(db *gorm.DB, param string, uid ...interface{}) (*[]Laboratorios, error) {
+		Laboratorioss := []Laboratorios{}
+		params := strings.Split(param, ";")
+		uids := uid[0].([]interface{})
+		if len(params) != len(uids) {
+			return nil, errors.New("condição inválida")
+		}
+		result := db.Model(&Laboratorios{}).Preload("CreatedBy").Preload("UpdatedBy").Preload("Materiais").Where(strings.Join(params, " AND "), uids...).Find(&Laboratorioss)
+		//result := db.Joins("CreatedBy", db.Where(strings.Join(params, " AND "), uids...)).Find(&Laboratorioss)
+		if result.Error != nil {
+			return nil, result.Error
+		}
+		return &Laboratorioss, nil
+	}
+*/
 func (p *Laboratorios) Delete(db *gorm.DB, uid uuid.UUID) (int64, error) {
 	db = db.Delete(&Laboratorios{}, "id = ? ", uid)
 	if db.Error != nil {

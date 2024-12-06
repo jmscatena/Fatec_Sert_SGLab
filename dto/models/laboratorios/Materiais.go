@@ -72,6 +72,19 @@ func (p *Materiais) List(db *gorm.DB) (*[]Materiais, error) {
 	}
 	return &Materiaiss, nil
 }
+
+func (u *Materiais) Find(db *gorm.DB, param string, uid string) (*Materiais, error) {
+	err := db.Debug().Model(Materiais{}).Where(param, uid).Take(&u).Error
+	if err != nil {
+		return &Materiais{}, err
+	}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return &Materiais{}, errors.New("Material Inexistente")
+	}
+	return u, nil
+}
+
+/*
 func (p *Materiais) Find(db *gorm.DB, uid uuid.UUID) (*Materiais, error) {
 	err := db.Debug().Model(&Materiais{}).Where("id = ?", uid).Take(&p).Error
 	if err != nil {
@@ -79,6 +92,7 @@ func (p *Materiais) Find(db *gorm.DB, uid uuid.UUID) (*Materiais, error) {
 	}
 	return p, nil
 }
+
 func (p *Materiais) FindBy(db *gorm.DB, param string, uid ...interface{}) (*[]Materiais, error) {
 	Materiaiss := []Materiais{}
 	params := strings.Split(param, ";")
@@ -92,6 +106,8 @@ func (p *Materiais) FindBy(db *gorm.DB, param string, uid ...interface{}) (*[]Ma
 	}
 	return &Materiaiss, nil
 }
+*/
+
 func (p *Materiais) Delete(db *gorm.DB, uid uuid.UUID) (int64, error) {
 	db = db.Delete(&Materiais{}, "id = ? ", uid)
 	if db.Error != nil {

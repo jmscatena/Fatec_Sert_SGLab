@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"github.com/google/uuid"
-	"github.com/jmscatena/Fatec_Sert_SGLab/database/models/administrativo"
-	laboratorios2 "github.com/jmscatena/Fatec_Sert_SGLab/database/models/laboratorios"
+	"github.com/jmscatena/Fatec_Sert_SGLab/dto/models/administrativo"
+	laboratorios2 "github.com/jmscatena/Fatec_Sert_SGLab/dto/models/laboratorios"
 	"gorm.io/gorm"
 )
 

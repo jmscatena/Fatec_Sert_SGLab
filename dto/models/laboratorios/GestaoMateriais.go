@@ -3,9 +3,8 @@ package laboratorios
 import (
 	"errors"
 	"github.com/google/uuid"
-	"github.com/jmscatena/Fatec_Sert_SGLab/database/models/administrativo"
+	"github.com/jmscatena/Fatec_Sert_SGLab/dto/models/administrativo"
 	"gorm.io/gorm"
-	"strings"
 	"time"
 )
 
@@ -59,28 +58,40 @@ func (p *GestaoMateriais) List(db *gorm.DB) (*[]GestaoMateriais, error) {
 	return &GestaoMateriaiss, nil
 }
 
-func (p *GestaoMateriais) Find(db *gorm.DB, uid uuid.UUID) (*GestaoMateriais, error) {
-	err := db.Debug().Model(&GestaoMateriais{}).Where("id = ?", uid).Take(&p).Error
+func (u *GestaoMateriais) Find(db *gorm.DB, param string, uid string) (*GestaoMateriais, error) {
+	err := db.Debug().Model(GestaoMateriais{}).Where(param, uid).Take(&u).Error
 	if err != nil {
 		return &GestaoMateriais{}, err
 	}
-	return p, nil
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return &GestaoMateriais{}, errors.New("Gestao Material Inexistente")
+	}
+	return u, nil
 }
 
-func (p *GestaoMateriais) FindBy(db *gorm.DB, param string, uid ...interface{}) (*[]GestaoMateriais, error) {
-	GestaoMateriaiss := []GestaoMateriais{}
-	params := strings.Split(param, ";")
-	uids := uid[0].([]interface{})
-	if len(params) != len(uids) {
-		return nil, errors.New("condição inválida")
+/*
+	func (p *GestaoMateriais) Find(db *gorm.DB, uid uuid.UUID) (*GestaoMateriais, error) {
+		err := db.Debug().Model(&GestaoMateriais{}).Where("id = ?", uid).Take(&p).Error
+		if err != nil {
+			return &GestaoMateriais{}, err
+		}
+		return p, nil
 	}
-	result := db.Where(strings.Join(params, " AND "), uids...).Find(&GestaoMateriaiss)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-	return &GestaoMateriaiss, nil
-}
 
+	func (p *GestaoMateriais) FindBy(db *gorm.DB, param string, uid ...interface{}) (*[]GestaoMateriais, error) {
+		GestaoMateriaiss := []GestaoMateriais{}
+		params := strings.Split(param, ";")
+		uids := uid[0].([]interface{})
+		if len(params) != len(uids) {
+			return nil, errors.New("condição inválida")
+		}
+		result := db.Where(strings.Join(params, " AND "), uids...).Find(&GestaoMateriaiss)
+		if result.Error != nil {
+			return nil, result.Error
+		}
+		return &GestaoMateriaiss, nil
+	}
+*/
 func (p *GestaoMateriais) Delete(db *gorm.DB, uid uuid.UUID) (int64, error) {
 	db = db.Delete(&GestaoMateriais{}, "id = ? ", uid)
 	if db.Error != nil {

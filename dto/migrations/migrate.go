@@ -2,8 +2,8 @@ package migrations
 
 import (
 	"fmt"
-	admin "github.com/jmscatena/Fatec_Sert_SGLab/database/models/administrativo"
-	lab "github.com/jmscatena/Fatec_Sert_SGLab/database/models/laboratorios"
+	admin "github.com/jmscatena/Fatec_Sert_SGLab/dto/models/administrativo"
+	lab "github.com/jmscatena/Fatec_Sert_SGLab/dto/models/laboratorios"
 	"gorm.io/gorm"
 )
 

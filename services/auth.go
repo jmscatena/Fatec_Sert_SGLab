@@ -4,8 +4,8 @@ import (
 	"fmt"
 	gin "github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/jmscatena/Fatec_Sert_SGLab/database"
-	"github.com/jmscatena/Fatec_Sert_SGLab/database/models/administrativo"
+	"github.com/jmscatena/Fatec_Sert_SGLab/config"
+	"github.com/jmscatena/Fatec_Sert_SGLab/dto/models/administrativo"
 	"net/http"
 	"strings"
 )
@@ -133,14 +133,14 @@ func Login() gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		refreshtoken, err := CreateToken(*foundUser, 10, "refresh")
-		err = StoreToken(foundUser.UID.String(), refreshtoken, 10)
+		//refreshtoken, err := CreateToken(*foundUser, 1000, "refresh")
+		//err = StoreToken(foundUser.UID.String(), refreshtoken, 10)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"id": foundUser.UID, "data": refreshtoken})
+		c.JSON(http.StatusOK, gin.H{"id": foundUser.UID, "data": token})
 
 	}
 }
@@ -168,6 +168,7 @@ func Authenticate() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		userID := c.Request.Header.Get("ID")
+
 		if authHeader == "" || userID == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Authorization"})
 			c.Abort()
@@ -182,7 +183,7 @@ func Authenticate() gin.HandlerFunc {
 		}
 		// Verify the JWT token
 		tokenString := tokenParts[1]
-		_, err := VerifyToken(tokenString, userID)
+		_, err := VerifyToken(tokenString, "refresh")
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or Expired Access"})
 			c.Abort()
@@ -205,7 +206,7 @@ func Authenticate() gin.HandlerFunc {
 }
 
 func ValidateSession(token string, user administrativo.Usuario) (string, error) {
-	redisClient, err := database.InitDF()
+	redisClient, err := config.database.InitDF()
 	if err != nil {
 		return "", fmt.Errorf("Error Data revoke token: %w", err)
 	}

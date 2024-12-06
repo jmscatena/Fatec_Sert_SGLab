@@ -3,7 +3,7 @@ package laboratorios
 import (
 	"errors"
 	"github.com/google/uuid"
-	"github.com/jmscatena/Fatec_Sert_SGLab/database/models/administrativo"
+	"github.com/jmscatena/Fatec_Sert_SGLab/dto/models/administrativo"
 	"gorm.io/gorm"
 	"html"
 	"log"
@@ -133,37 +133,48 @@ func (p *Reservas) List(db *gorm.DB) (*[]Reservas, error) {
 	}
 	return &Reservass, nil
 }
-
-func (p *Reservas) Find(db *gorm.DB, uid uuid.UUID) (*Reservas, error) {
-	err := db.Debug().Model(&Reservas{}).
-		Preload("Laboratorio").
-		Preload("AutorizadoBy").
-		Preload("SolicitadoBy").
-		Where("id = ?", uid).Take(&p).Error
+func (u *Reservas) Find(db *gorm.DB, param string, uid string) (*Reservas, error) {
+	err := db.Debug().Model(Reservas{}).Where(param, uid).Take(&u).Error
 	if err != nil {
 		return &Reservas{}, err
 	}
-	return p, nil
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return &Reservas{}, errors.New("Reserva Inexistente")
+	}
+	return u, nil
 }
 
-func (p *Reservas) FindBy(db *gorm.DB, param string, uid ...interface{}) (*[]Reservas, error) {
-	Reservass := []Reservas{}
-	params := strings.Split(param, ";")
-	uids := uid[0].([]interface{})
-	if len(params) != len(uids) {
-		return nil, errors.New("condição inválida")
+/*
+	func (p *Reservas) Find(db *gorm.DB, uid uuid.UUID) (*Reservas, error) {
+		err := db.Debug().Model(&Reservas{}).
+			Preload("Laboratorio").
+			Preload("AutorizadoBy").
+			Preload("SolicitadoBy").
+			Where("id = ?", uid).Take(&p).Error
+		if err != nil {
+			return &Reservas{}, err
+		}
+		return p, nil
 	}
-	result := db.
-		Preload("Laboratorio").
-		Preload("AutorizadoBy").
-		Preload("SolicitadoBy").
-		Where(strings.Join(params, " AND "), uids...).Find(&Reservass)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-	return &Reservass, nil
-}
 
+	func (p *Reservas) FindBy(db *gorm.DB, param string, uid ...interface{}) (*[]Reservas, error) {
+		Reservass := []Reservas{}
+		params := strings.Split(param, ";")
+		uids := uid[0].([]interface{})
+		if len(params) != len(uids) {
+			return nil, errors.New("condição inválida")
+		}
+		result := db.
+			Preload("Laboratorio").
+			Preload("AutorizadoBy").
+			Preload("SolicitadoBy").
+			Where(strings.Join(params, " AND "), uids...).Find(&Reservass)
+		if result.Error != nil {
+			return nil, result.Error
+		}
+		return &Reservass, nil
+	}
+*/
 func (p *Reservas) Delete(db *gorm.DB, uid uuid.UUID) (int64, error) {
 	db = db.Delete(&Reservas{}, "id = ? ", uid)
 	if db.Error != nil {
