@@ -50,7 +50,7 @@ func ConfigRoutes(router *gin.Engine, conn infra.Connection, token infra.Secrets
 		}
 	}
 
-	matRoute := main.Group("materiais", services.Authenticate())
+	matRoute := main.Group("materiais", services.Authenticate(conn, token))
 	{
 		var mat laboratorios2.Materiais
 		matRoute.POST("/", func(context *gin.Context) {
@@ -83,7 +83,7 @@ func ConfigRoutes(router *gin.Engine, conn infra.Connection, token infra.Secrets
 		*/
 
 	}
-	lab := main.Group("laboratorios", services.Authenticate())
+	lab := main.Group("laboratorios", services.Authenticate(conn, token))
 	{
 		var obj laboratorios2.Laboratorios
 		lab.POST("/", func(context *gin.Context) {
@@ -107,7 +107,7 @@ func ConfigRoutes(router *gin.Engine, conn infra.Connection, token infra.Secrets
 			middleware.Erase[laboratorios2.Laboratorios](context, &obj, uid, conn)
 		})
 	}
-	res := main.Group("reservas", services.Authenticate())
+	res := main.Group("reservas", services.Authenticate(conn, token))
 	{
 		var obj laboratorios2.Reservas
 		res.POST("/", func(context *gin.Context) {
@@ -131,7 +131,7 @@ func ConfigRoutes(router *gin.Engine, conn infra.Connection, token infra.Secrets
 			middleware.Erase[laboratorios2.Reservas](context, &obj, uid, conn)
 		})
 	}
-	ges := main.Group("gestao", services.Authenticate())
+	ges := main.Group("gestao", services.Authenticate(conn, token))
 	{
 		var obj laboratorios2.GestaoMateriais
 		ges.POST("/", func(context *gin.Context) {
