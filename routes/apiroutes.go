@@ -5,11 +5,12 @@ import (
 	"github.com/google/uuid"
 	"github.com/jmscatena/Fatec_Sert_SGLab/dto/models/administrativo"
 	laboratorios2 "github.com/jmscatena/Fatec_Sert_SGLab/dto/models/laboratorios"
+	"github.com/jmscatena/Fatec_Sert_SGLab/infra"
 	"github.com/jmscatena/Fatec_Sert_SGLab/middleware"
 	"github.com/jmscatena/Fatec_Sert_SGLab/services"
 )
 
-func ConfigRoutes(router *gin.Engine) *gin.Engine {
+func ConfigRoutes(router *gin.Engine, conn infra.Connection) *gin.Engine {
 	main := router.Group("/")
 	{
 		login := main.Group("login")
@@ -20,7 +21,7 @@ func ConfigRoutes(router *gin.Engine) *gin.Engine {
 		{
 			var user administrativo.Usuario
 			userRoute.POST("/", func(context *gin.Context) {
-				middleware.Add[administrativo.Usuario](context, &user)
+				middleware.Add[administrativo.Usuario](context, &user, conn)
 			})
 			userRoute.GET("/:id", func(context *gin.Context) {
 				uid, _ := uuid.Parse(context.Param("id"))

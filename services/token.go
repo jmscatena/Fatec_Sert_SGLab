@@ -3,8 +3,8 @@ package services
 import (
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/jmscatena/Fatec_Sert_SGLab/config"
 	"github.com/jmscatena/Fatec_Sert_SGLab/dto/models/administrativo"
+	"github.com/jmscatena/Fatec_Sert_SGLab/infra"
 	"github.com/joho/godotenv"
 	"log"
 	"os"
@@ -39,7 +39,7 @@ func CreateToken(user administrativo.Usuario, expire int, keytype string) (strin
 	return tokenString, nil
 }
 func StoreToken(key string, value string, expire int) error {
-	redisClient, err := config.database.InitDF()
+	redisClient, err := infra.database.InitDF()
 	if err != nil {
 		return fmt.Errorf("Error Data storing token: %w", err)
 	}
@@ -73,7 +73,7 @@ func VerifyToken(tokenString string, secretKey string) (*jwt.Token, error) {
 }
 
 func RevokeToken(token string) error {
-	redisClient, err := config.database.InitDF()
+	redisClient, err := infra.database.InitDF()
 	if err != nil {
 		return fmt.Errorf("Error Data revoke token: %w", err)
 	}

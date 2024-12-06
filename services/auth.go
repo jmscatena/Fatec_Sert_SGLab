@@ -4,8 +4,8 @@ import (
 	"fmt"
 	gin "github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/jmscatena/Fatec_Sert_SGLab/config"
 	"github.com/jmscatena/Fatec_Sert_SGLab/dto/models/administrativo"
+	"github.com/jmscatena/Fatec_Sert_SGLab/infra"
 	"net/http"
 	"strings"
 )
@@ -206,7 +206,7 @@ func Authenticate() gin.HandlerFunc {
 }
 
 func ValidateSession(token string, user administrativo.Usuario) (string, error) {
-	redisClient, err := config.database.InitDF()
+	redisClient, err := infra.database.InitDF()
 	if err != nil {
 		return "", fmt.Errorf("Error Data revoke token: %w", err)
 	}
