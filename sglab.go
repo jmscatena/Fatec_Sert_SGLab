@@ -15,18 +15,20 @@ func main() {
 		log.Fatalf("Error Loading Configuration File")
 	}
 	gin.SetMode(os.Getenv("SET_MODE"))
-	DbConn := infra.Connection{Db: nil, NoSql: nil}
-	_, err = DbConn.InitDB()
+	dbConn := infra.Connection{Db: nil, NoSql: nil}
+	_, err = dbConn.InitDB()
 	if err != nil {
 		log.Fatalf("Error Loading Database Connection")
 	}
-	_, err = DbConn.InitNoSQL()
+	_, err = dbConn.InitNoSQL()
 	if err != nil {
 		log.Fatalf("Error Loading Redis Connection")
 	}
+	token := (&infra.SecretsToken{}).GenerateSecret()
+
 	server := infra.Server{}
 	server.NewServer("8000")
-	router := routes.ConfigRoutes(server.Server, DbConn)
+	router := routes.ConfigRoutes(server.Server, dbConn, *token)
 	log.Fatal(router.Run(":" + server.Port))
 
 }

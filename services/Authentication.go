@@ -1,33 +1,14 @@
 package services
 
 import (
+	"fmt"
 	gin "github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/jmscatena/Fatec_Sert_SGLab/dto/models/administrativo"
 	"github.com/jmscatena/Fatec_Sert_SGLab/infra"
-	"github.com/joho/godotenv"
-	"log"
 	"net/http"
-	"os"
 	"strings"
 )
-
-type Token struct {
-	secret  string
-	refresh string
-}
-
-func NewToken() *Token {
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatalf("Error Loading Configuration File")
-		return nil
-	}
-	return &Token{
-		secret:  os.Getenv("TOKEN_SECRET_KEY"),
-		refresh: os.Getenv("REFRESH_SECRET_KEY"),
-	}
-}
 
 var validate = validator.New()
 
@@ -67,11 +48,10 @@ var validate = validator.New()
 		}
 	}
 */
-func Signup(conn infra.Connection) gin.HandlerFunc {
+func Signup(conn infra.Connection, token infra.SecretsToken) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		//var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 		var user administrativo.Usuario
-		secrets := NewToken()
 		if err := c.BindJSON(&user); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			c.Abort()
@@ -103,7 +83,7 @@ func Signup(conn infra.Connection) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		token, err := infra.CreateToken(user, 1440, secrets.secret)
+		token, err := infra.CreateToken(user, 1440, token.GetAccess())
 		if err != nil {
 			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
 			c.Abort()
@@ -123,10 +103,9 @@ func Signup(conn infra.Connection) gin.HandlerFunc {
 	}
 
 }
-func Login(conn infra.Connection) gin.HandlerFunc {
+func Login(conn infra.Connection, token infra.SecretsToken) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var user administrativo.Usuario
-		secrets := NewToken()
 		if err := c.ShouldBindJSON(&user); err != nil {
 			c.JSON(http.StatusUnprocessableEntity, "Invalid json provided")
 			return
@@ -148,7 +127,7 @@ func Login(conn infra.Connection) gin.HandlerFunc {
 			return
 		}
 
-		token, err := infra.CreateToken(*foundUser, 1440, secrets.secret)
+		token, err := infra.CreateToken(*foundUser, 1440, token.GetRefresh())
 		err = infra.StoreToken(token, foundUser.UID.String(), 1440, conn)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -184,4 +163,85 @@ func Logout(conn infra.Connection) gin.HandlerFunc {
 		infra.RevokeToken(userID, conn)
 		c.Redirect(http.StatusFound, "/login")
 	}
+}
+func Authenticate(conn infra.Connection, token infra.SecretsToken) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authHeader := c.GetHeader("Authorization")
+		userID := c.Request.Header.Get("ID")
+
+		if authHeader == "" || userID == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Authorization"})
+			c.Abort()
+			return
+		}
+		// Split the header value into "Bearer " and the token
+		tokenParts := strings.Split(authHeader, " ")
+		if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Authorization"})
+			c.Abort()
+			return
+		}
+		// Verify the JWT token
+		tokenString := tokenParts[1]
+		_, err := infra.VerifyToken(tokenString, token.GetRefresh())
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or Expired Access"})
+			c.Abort()
+			return
+		}
+		condition := "UID=?"
+		foundUser, err := Get[administrativo.Usuario](new(administrativo.Usuario), condition, userID, conn)
+		//		foundUser := (*foundUsers)[0]
+		token, err := ValidateSession(conn, tokenString, token, *foundUser)
+
+		// Store the user ID in the request context
+		//c.JSON(http.StatusOK, gin.H{"data": foundUser.UID, "token": token})
+		c.Set("id", foundUser.UID)
+		c.Set("data", token)
+
+		// Proceed to the next handler
+		c.Next()
+
+	}
+}
+
+func ValidateSession(conn infra.Connection, tokenString string, token infra.SecretsToken,
+	user administrativo.Usuario) (string, error) {
+
+	if conn.NoSql != nil {
+		return "", fmt.Errorf("Error Database access token")
+	}
+	userId, err := conn.NoSql.Get(tokenString).Result()
+	if err != nil {
+		return "", fmt.Errorf("Error validate session: %w", err)
+	}
+	if userId == "" {
+		tokenAccess, err := conn.NoSql.Get(user.UID.String()).Result()
+		if err != nil || tokenAccess == "" {
+			return "", fmt.Errorf("Error validate session: %w", err)
+		}
+		tk, err := infra.VerifyToken(tokenAccess, token.GetAccess())
+		if tk == nil {
+			infra.RevokeToken(user.UID.String(), conn)
+			return "", fmt.Errorf("Error validate session: %w", err)
+		}
+		refreshtk, err := infra.CreateToken(user, 10, token.GetRefresh())
+		if err != nil {
+			return "", fmt.Errorf("Error validate session: %w", err)
+		}
+		err = infra.StoreToken(refreshtk, user.UID.String(), 10, conn)
+		if err != nil {
+			return "", fmt.Errorf("Error validate session: %w", err)
+		}
+	}
+	if userId == user.UID.String() {
+		tk, err := conn.NoSql.Get(user.UID.String()).Result()
+		if err != nil || tk == "" {
+			infra.RevokeToken(tokenString, conn)
+			infra.RevokeToken(tk, conn)
+			return "", fmt.Errorf("Error validate session: %w", err)
+		}
+	}
+	//defer conn.NoSql.Close()
+	return tokenString, nil
 }

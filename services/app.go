@@ -2,10 +2,9 @@ package services
 
 import (
 	"github.com/google/uuid"
+	"github.com/jmscatena/Fatec_Sert_SGLab/handlers"
 	"github.com/jmscatena/Fatec_Sert_SGLab/infra"
 	"log"
-
-	"github.com/jmscatena/Fatec_Sert_SGLab/handlers"
 )
 
 func New[T handlers.Tables](o handlers.PersistenceHandler[T], conn infra.Connection) (uuid.UUID, error) {

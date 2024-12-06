@@ -67,3 +67,26 @@ func (s *Server) Run() {
 	log.Printf("Server running at port: %v", s.Port)
 
 }
+
+type SecretsToken struct {
+	secret  string
+	refresh string
+}
+
+func (t *SecretsToken) GetAccess() string {
+	return t.secret
+}
+func (t *SecretsToken) GetRefresh() string {
+	return t.refresh
+}
+
+func (t *SecretsToken) GenerateSecret() *SecretsToken {
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatalf("Error Loading Configuration File")
+	}
+	return &SecretsToken{
+		secret:  os.Getenv("TOKEN_SECRET_KEY"),
+		refresh: os.Getenv("REFRESH_SECRET_KEY"),
+	}
+}

@@ -10,14 +10,14 @@ import (
 	"github.com/jmscatena/Fatec_Sert_SGLab/services"
 )
 
-func ConfigRoutes(router *gin.Engine, conn infra.Connection) *gin.Engine {
+func ConfigRoutes(router *gin.Engine, conn infra.Connection, token infra.SecretsToken) *gin.Engine {
 	main := router.Group("/")
 	{
 		login := main.Group("login")
 		{
-			login.POST("/", services.Login())
+			login.POST("/", services.Login(conn, token))
 		}
-		userRoute := main.Group("user", services.Authenticate())
+		userRoute := main.Group("user", services.Authenticate(conn, token))
 		{
 			var user administrativo.Usuario
 			userRoute.POST("/", func(context *gin.Context) {
