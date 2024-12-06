@@ -1,28 +1,14 @@
-package services
+package infra
 
 import (
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/jmscatena/Fatec_Sert_SGLab/dto/models/administrativo"
-	"github.com/jmscatena/Fatec_Sert_SGLab/infra"
-	"github.com/joho/godotenv"
-	"log"
-	"os"
 	"time"
 )
 
-/* Funcao NewAccessToken ok */
-func CreateToken(user administrativo.Usuario, expire int, keytype string) (string, error) {
-	err := godotenv.Load(".env")
-	var secretkey string
-	if err != nil {
-		log.Fatalf("Error Loading Configuration File")
-	}
-	if keytype == "token" {
-		secretkey = os.Getenv("TOKEN_SECRET_KEY")
-	} else {
-		secretkey = os.Getenv("REFRESH_SECRET_KEY")
-	}
+func CreateToken(user administrativo.Usuario, expire int, secretkey string) (string, error) {
+
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"uuid": user.UID.String(),                // Subject (user identifier)
 		"name": user.Nome,                        // Issuer
@@ -38,28 +24,38 @@ func CreateToken(user administrativo.Usuario, expire int, keytype string) (strin
 	}
 	return tokenString, nil
 }
-func StoreToken(key string, value string, expire int) error {
-	redisClient, err := infra.database.InitDF()
-	if err != nil {
-		return fmt.Errorf("Error Data storing token: %w", err)
+func StoreToken(key string, value string, expire int, conn Connection) error {
+	redisClient := conn.NoSql
+	if redisClient == nil {
+		return fmt.Errorf("Error Access Database to store token")
 	}
-	err = redisClient.Set(key, value, time.Minute*time.Duration(expire)).Err()
+	err := redisClient.Set(key, value, time.Minute*time.Duration(expire)).Err()
 	if err != nil {
 		return fmt.Errorf("Error storing token: %w", err)
 	}
-	defer redisClient.Close()
+	//defer redisClient.Close()
 	return nil
 }
 
-/* Funcao VerifyToken ok */
 func VerifyToken(tokenString string, secretKey string) (*jwt.Token, error) {
+	sk := secretKey
 	keyfunc := func(token *jwt.Token) (interface{}, error) {
-		_, ok := token.Method.(*jwt.SigningMethodHMAC)
+		ok := token.Method.Alg() == jwt.SigningMethodHS256.Alg()
 		if !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(secretKey), nil
+		return []byte(sk), nil
 	}
+	claims := jwt.MapClaims{}
+	jwtToken, err := jwt.ParseWithClaims(tokenString, &claims, keyfunc)
+	if err != nil {
+		return nil, nil
+	}
+	if !jwtToken.Valid {
+		print("Invalid Token")
+		return nil, nil
+	}
+	return jwtToken, nil
 	/*
 		token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			return secretKey, nil
@@ -67,20 +63,20 @@ func VerifyToken(tokenString string, secretKey string) (*jwt.Token, error) {
 		println(token.Valid)
 		if !token.Valid {
 			return nil, fmt.Errorf("invalid token")
-		}*/
-
-	return token, nil
+		}
+		return token, nil
+	*/
 }
 
-func RevokeToken(token string) error {
-	redisClient, err := infra.database.InitDF()
-	if err != nil {
-		return fmt.Errorf("Error Data revoke token: %w", err)
+func RevokeToken(token string, conn Connection) error {
+	//redisClient, err := database.InitDF()
+	if conn.NoSql == nil {
+		return fmt.Errorf("Error Database Connection to Data token revoke")
 	}
-	err = redisClient.Del(token).Err()
+	err := conn.NoSql.Del(token).Err()
 	if err != nil {
 		return fmt.Errorf("Error revoke token: %w", err)
 	}
-	defer redisClient.Close()
+	//defer redisClient.Close()
 	return nil
 }
