@@ -16,7 +16,7 @@ type Usuario struct {
 	UID    uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()" json:"UID"`
 	Nome   string    `gorm:"size:255;not null;unique" json:"nome"`
 	Email  string    `gorm:"size:100;not null,email;" json:"email"`
-	Senha  string    `gorm:"size:100;not null;" json:"code"`
+	Senha  string    `gorm:"size:100;not null;" `
 	Ativo  bool      `gorm:"default:True;" json:"ativo"`
 	Perfil bool      `gorm:"default:False;"`
 }
