@@ -8,16 +8,14 @@ import (
 )
 
 func CreateToken(user administrativo.Usuario, expire int, secretkey string) (string, error) {
-
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"uuid": user.UID.String(),                // Subject (user identifier)
-		"name": user.Nome,                        // Issuer
-		"exp":  time.Now().Add(time.Hour).Unix(), // Expiration time
-		//"exp":  time.Now().Add(time.Duration(expire) * time.Minute).Unix(), // Expiration time
+		"uuid": user.UID.String(), // Subject (user identifier)
+		"name": user.Nome,         // Issuer
+		//"exp":  time.Now().Add(time.Hour).Unix(), // Expiration time
+		"exp": time.Now().Add(time.Duration(expire) * time.Minute).Unix(), // Expiration time
 		//"aud":  getRole(username),                // Audience (user role)
 		//"iat":  time.Now().Unix(),                // Issued at
 	})
-	fmt.Printf("Token claims added: %+v\n", claims)
 	tokenString, err := claims.SignedString([]byte(secretkey))
 	if err != nil {
 		return "", err
@@ -49,11 +47,10 @@ func VerifyToken(tokenString string, secretKey string) (*jwt.Token, error) {
 	claims := jwt.MapClaims{}
 	jwtToken, err := jwt.ParseWithClaims(tokenString, &claims, keyfunc)
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
 	if !jwtToken.Valid {
-		print("Invalid Token")
-		return nil, nil
+		return nil, fmt.Errorf("Invalid Token")
 	}
 	return jwtToken, nil
 	/*

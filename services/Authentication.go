@@ -1,6 +1,7 @@
 package services
 
 import (
+	"encoding/json"
 	"fmt"
 	gin "github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -106,19 +107,25 @@ func Signup(conn infra.Connection, token infra.SecretsToken) gin.HandlerFunc {
 func Login(conn infra.Connection, token infra.SecretsToken) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var user administrativo.Usuario
-		if err := c.ShouldBindJSON(&user); err != nil {
+		json_map := make(map[string]interface{})
+		err := json.NewDecoder(c.Request.Body).Decode(&json_map)
+		if err != nil {
+			//c.ShouldBindJSON(&json_map);
 			c.JSON(http.StatusUnprocessableEntity, "Invalid json provided")
 			return
 		}
-		password := user.Senha
+		println(json_map["email"])
+		println(json_map["code"])
+		password := json_map["code"].(string)
 		condition := "Email=?"
-		foundUser, err := Get[administrativo.Usuario](&user, condition, user.Email, conn)
-
+		foundUser, err := Get[administrativo.Usuario](&user, condition, json_map["email"].(string), conn)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "email or password is incorrect"})
 			c.Abort()
 			return
 		}
+		println(foundUser.Nome)
+		println(password)
 		//foundUser := (*foundUsers)[0]
 		err = administrativo.VerifyPassword(password, foundUser.Senha)
 		if err != nil {
@@ -126,21 +133,21 @@ func Login(conn infra.Connection, token infra.SecretsToken) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-
-		token, err := infra.CreateToken(*foundUser, 1440, token.GetRefresh())
-		err = infra.StoreToken(token, foundUser.UID.String(), 1440, conn)
+		//Create access token
+		accesstoken, err := infra.CreateToken(*foundUser, 1440, token.GetAccess())
+		err = infra.StoreToken(accesstoken, foundUser.UID.String(), 1440, conn)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		//refreshtoken, err := CreateToken(*foundUser, 1000, "refresh")
-		//err = StoreToken(foundUser.UID.String(), refreshtoken, 10)
+		//Create refresh token
+		refreshtoken, err := infra.CreateToken(*foundUser, 180, token.GetRefresh())
+		err = infra.StoreToken(foundUser.UID.String(), refreshtoken, 180, conn)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-
-		c.JSON(http.StatusOK, gin.H{"id": foundUser.UID, "data": token})
+		c.JSON(http.StatusOK, gin.H{"id": foundUser.UID, "data": refreshtoken})
 
 	}
 }
